@@ -1,0 +1,27 @@
+{
+  "name": "ayucompile",
+  "version": "1.0.0",
+  "description": "A lightweight custom programming language compiler that compiles .ayu source files to executable JavaScript.",
+  "main": "src/index.js",
+  "bin": {
+    "ayu": "src/index.js"
+  },
+  "scripts": {
+    "test": "powershell -ExecutionPolicy Bypass -File .\\test-all.ps1",
+    "compile": "node src/index.js",
+    "check": "node --check src/lexer.js && node --check src/parser.js && node --check src/codeGenerator.js && node --check src/index.js"
+  },
+  "keywords": [
+    "compiler",
+    "programming-language",
+    "ast",
+    "parser",
+    "lexer",
+    "javascript"
+  ],
+  "author": "Ayush Kumar",
+  "license": "MIT",
+  "dependencies": {
+    "readline-sync": "^1.4.10"
+  }
+}

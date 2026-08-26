@@ -1,0 +1,11 @@
+let x = 10 + 5 * 2;
+
+print x;
+
+let y = (10 + 5) * 2;
+
+print y;
+
+let z = 20 / 5 + 3;
+
+print z;

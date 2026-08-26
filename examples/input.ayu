@@ -1,0 +1,11 @@
+let name = input("Enter your name: ");
+print name;
+
+let age = inputNumber("Enter your age: ");
+print age;
+
+if (age >= 18) {
+    print "Adult";
+} else {
+    print "Minor";
+}

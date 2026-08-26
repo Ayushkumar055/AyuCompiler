@@ -1,0 +1,11 @@
+let numbers = [10, 20, 30, 40];
+console.log(numbers[0]);
+console.log(numbers[2]);
+console.log((numbers).length);
+console.log((numbers).includes(20));
+console.log((numbers).indexOf(30));
+(numbers).push(50);
+console.log((numbers).length);
+console.log(numbers[4]);
+(numbers).pop();
+console.log((numbers).length);

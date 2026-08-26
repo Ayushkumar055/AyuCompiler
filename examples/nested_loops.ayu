@@ -1,0 +1,12 @@
+let numbers = [1, 2, 3];
+
+for item in numbers {
+    print item;
+
+    let x = 1;
+
+    while (x <= 2) {
+        print x;
+        x = x + 1;
+    }
+}

@@ -1,0 +1,12 @@
+let age = 20;
+let marks = 85;
+
+if (age >= 18) {
+    if (marks >= 80) {
+        print "Adult and Excellent";
+    } else {
+        print "Adult but marks are below 80";
+    }
+} else {
+    print "Minor";
+}

@@ -1,0 +1,12 @@
+fn add(a, b) {
+    return a + b;
+}
+
+fn square(n) {
+    return n * n;
+}
+
+let result = add(10, 20);
+print result;
+
+print square(5);

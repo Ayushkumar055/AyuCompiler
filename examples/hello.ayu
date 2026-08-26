@@ -1,0 +1,46 @@
+// Basic variables
+let name = "Ayush";
+let age = 20;
+
+print name;
+print age;
+
+// String functions
+print upper(name);
+print lower(name);
+
+// Comparison + if/else
+if age >= 18 {
+    print "Adult";
+} else {
+    print "Minor";
+}
+
+// Boolean
+let student = true;
+print student;
+
+// Arithmetic
+let a = 10;
+let b = 5;
+
+print a + b;
+print a * b;
+print a / b;
+print a % b;
+
+// Array
+let numbers = [10, 20, 30, 40];
+
+print numbers[0];
+print numbers[2];
+
+// Array function
+print length(numbers);
+print contains(numbers, 20);
+print indexOf(numbers, 30);
+
+// For each
+for item in numbers {
+    print item;
+}
