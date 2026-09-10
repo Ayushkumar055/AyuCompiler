@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AyuCompiler - Features Specification</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 20mm;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #24292e;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            color: #0366d6;
+            border-bottom: 2px solid #eaecef;
+            padding-bottom: 8px;
+            font-size: 24px;
+            margin-top: 0;
+        }
+        h2 {
+            color: #24292e;
+            border-bottom: 1px solid #eaecef;
+            padding-bottom: 5px;
+            font-size: 18px;
+            margin-top: 24px;
+        }
+        h3 {
+            font-size: 15px;
+            margin-bottom: 6px;
+        }
+        .meta-box {
+            background-color: #f6f8fa;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+        .meta-box p {
+            margin: 4px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 13px;
+        }
+        th, td {
+            border: 1px solid #dfe2e5;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f6f8fa;
+            font-weight: 600;
+        }
+        code, pre {
+            font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+            background-color: #f6f8fa;
+            border-radius: 3px;
+        }
+        code {
+            padding: 2px 5px;
+            font-size: 12px;
+            color: #d73a49;
+        }
+        pre {
+            padding: 12px;
+            font-size: 12px;
+            border: 1px solid #e1e4e8;
+            overflow-x: auto;
+            line-height: 1.45;
+        }
+        .status-badge {
+            background-color: #28a745;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 11px;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>AyuCompiler — Technical Specification & Features</h1>
+
+    <div class="meta-box">
+        <p><strong>Project Name:</strong> AyuCompiler</p>
+        <p><strong>Author:</strong> Ayush Kumar</p>
+        <p><strong>Type:</strong> Source-to-Source Programming Language Compiler (Transpiler)</p>
+        <p><strong>Target Platform:</strong> JavaScript (Node.js Runtime)</p>
+        <p><strong>GitHub Repository:</strong> https://github.com/Ayushkumar055/AyuCompiler</p>
+    </div>
+
+    <h2>1. Executive Summary</h2>
+    <p>
+        <strong>AyuCompiler</strong> is a custom domain-specific language (DSL) compiler developed in JavaScript. It parses custom <code>.ayu</code> source files, generates an Abstract Syntax Tree (AST) using recursive-descent parsing, and transpiles the validated AST into clean, standard ES6 JavaScript.
+    </p>
+
+    <h2>2. Architecture Pipeline</h2>
+    <pre>
+  .ayu Source Code ──▶ [ Lexer ] ──▶ Tokens ──▶ [ Parser ] ──▶ AST ──▶ [ CodeGenerator ] ──▶ .js Output ──▶ Node.js
+    </pre>
+
+    <h2>3. Core Feature Matrix</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Feature Category</th>
+                <th>Description</th>
+                <th>Syntax Example</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Variables</strong></td>
+                <td>Dynamic variable allocation</td>
+                <td><code>let score = 95;</code></td>
+            </tr>
+            <tr>
+                <td><strong>Data Types</strong></td>
+                <td>Numbers, Strings, Booleans, Arrays</td>
+                <td><code>10, "Ayush", true, [1, 2]</code></td>
+            </tr>
+            <tr>
+                <td><strong>Arithmetic</strong></td>
+                <td>Math operators (<code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>%</code>)</td>
+                <td><code>let total = (a + b) * 2;</code></td>
+            </tr>
+            <tr>
+                <td><strong>Precedence</strong></td>
+                <td>Operator precedence hierarchy</td>
+                <td><code>10 + 5 * 2 // Evaluates to 20</code></td>
+            </tr>
+            <tr>
+                <td><strong>Conditionals</strong></td>
+                <td><code>if</code>, <code>else if</code>, <code>else</code>, and nested blocks</td>
+                <td><code>if (age >= 18) { print "Adult"; }</code></td>
+            </tr>
+            <tr>
+                <td><strong>Loops</strong></td>
+                <td><code>while</code>, index-based <code>for</code>, and iterable <code>for..in</code></td>
+                <td><code>for item in list { print item; }</code></td>
+            </tr>
+            <tr>
+                <td><strong>Loop Control</strong></td>
+                <td>Premature break and step continuation</td>
+                <td><code>break;</code>, <code>continue;</code></td>
+            </tr>
+            <tr>
+                <td><strong>Functions</strong></td>
+                <td>User-defined functions with parameters & returns</td>
+                <td><code>fn add(a, b) { return a + b; }</code></td>
+            </tr>
+            <tr>
+                <td><strong>Arrays</strong></td>
+                <td>Dynamic indexing, mutation & length queries</td>
+                <td><code>push(arr, 50);</code>, <code>pop(arr);</code></td>
+            </tr>
+            <tr>
+                <td><strong>Strings</strong></td>
+                <td>Case conversion utilities</td>
+                <td><code>upper(str);</code>, <code>lower(str);</code></td>
+            </tr>
+            <tr>
+                <td><strong>Console I/O</strong></td>
+                <td>Synchronous console input and output</td>
+                <td><code>let x = inputNumber("Age: ");</code></td>
+            </tr>
+            <tr>
+                <td><strong>Diagnostics</strong></td>
+                <td>Accurate line and column syntax errors</td>
+                <td><code>Line 4, Column 15 (ParserError)</code></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>4. Built-in Function Reference</h2>
+    <ul>
+        <li><strong><code>length(collection)</code></strong>: Returns array element count or string length.</li>
+        <li><strong><code>contains(collection, value)</code></strong>: Returns boolean <code>true</code> if element exists.</li>
+        <li><strong><code>indexOf(collection, value)</code></strong>: Returns 0-based index or <code>-1</code> if not found.</li>
+        <li><strong><code>push(array, value)</code></strong>: Appends value to the end of the array.</li>
+        <li><strong><code>pop(array)</code></strong>: Removes and returns the last element.</li>
+        <li><strong><code>upper(string)</code> / <code>lower(string)</code></strong>: Converts text case.</li>
+        <li><strong><code>input(prompt)</code> / <code>inputNumber(prompt)</code></strong>: Reads string or numeric input synchronously.</li>
+    </ul>
+
+    <h2>5. Automated Test Suite Results</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Test Suite</th>
+                <th>Target Feature Tested</th>
+                <th>Result</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><code>hello.ayu</code></td><td>Variables, arithmetic, and basic printing</td><td><span class="status-badge">PASSED</span></td></tr>
+            <tr><td><code>functions.ayu</code></td><td>Functions, parameters, and return evaluation</td><td><span class="status-badge">PASSED</span></td></tr>
+            <tr><td><code>nested_if.ayu</code></td><td>Nested conditional blocks</td><td><span class="status-badge">PASSED</span></td></tr>
+            <tr><td><code>nested_loops.ayu</code></td><td>Nested for-in and while loop executions</td><td><span class="status-badge">PASSED</span></td></tr>
+            <tr><td><code>arrays.ayu</code></td><td>Array indexing, push, pop, contains, indexOf</td><td><span class="status-badge">PASSED</span></td></tr>
+            <tr><td><code>precedence.ayu</code></td><td>Mathematical operator precedence verification</td><td><span class="status-badge">PASSED</span></td></tr>
+            <tr><td><code>input.ayu</code></td><td>Interactive terminal prompt handling</td><td><span class="status-badge">PASSED</span></td></tr>
+            <tr><td><code>error.ayu</code></td><td>Syntax error reporting with line/column tracking</td><td><span class="status-badge">PASSED</span></td></tr>
+        </tbody>
+    </table>
+
+</body>
+</html>

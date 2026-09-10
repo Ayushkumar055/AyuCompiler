@@ -1,0 +1,774 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AyuCompiler — a .ayu to JavaScript transpiler</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EEF0F1;
+    --paper-2:#E4E7EA;
+    --ink:#1B2130;
+    --ink-soft:#4A5265;
+    --line:#CBD1D8;
+    --blue:#3355D8;
+    --blue-deep:#1F3AA8;
+    --amber:#C7860A;
+    --green:#227A5B;
+    --red:#B23B3B;
+    --code-bg:#171B26;
+    --code-ink:#D8DEE9;
+    --code-line:#2A3040;
+    --tok-key:#7AA2F7;
+    --tok-str:#9ECE6A;
+    --tok-num:#E0AF68;
+    --tok-fn:#7DCFFF;
+    --tok-com:#5B6376;
+    --radius:3px;
+    --maxw:1160px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:var(--maxw); margin:0 auto; padding:0 28px;}
+  code, .mono{font-family:'JetBrains Mono',monospace;}
+  a{color:inherit;}
+
+  /* ---------- nav ---------- */
+  header{
+    position:sticky; top:0; z-index:40;
+    background:rgba(238,240,241,0.92);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav{display:flex; align-items:center; justify-content:space-between; padding:16px 28px; max-width:var(--maxw); margin:0 auto;}
+  .brand{display:flex; align-items:center; gap:10px; font-family:'JetBrains Mono',monospace; font-weight:700; font-size:17px; letter-spacing:-0.02em;}
+  .brand .dot{width:9px; height:9px; background:var(--blue); border-radius:50%; display:inline-block;}
+  .brand small{font-weight:500; color:var(--ink-soft); font-size:13px; margin-left:2px;}
+  .navlinks{display:flex; align-items:center; gap:26px; font-size:14.5px;}
+  .navlinks a{text-decoration:none; color:var(--ink-soft); transition:color .15s;}
+  .navlinks a:hover{color:var(--ink);}
+  .btn{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:9px 16px; border-radius:var(--radius);
+    font-size:14.5px; font-weight:600; text-decoration:none;
+    border:1px solid transparent; cursor:pointer;
+  }
+  .btn-primary{background:var(--blue); color:#fff;}
+  .btn-primary:hover{background:var(--blue-deep);}
+  .btn-ghost{border-color:var(--line); color:var(--ink);}
+  .btn-ghost:hover{border-color:var(--ink-soft);}
+
+  /* ---------- hero ---------- */
+  .hero{padding:76px 0 64px;}
+  .hero-grid{display:grid; grid-template-columns:1.05fr 1fr; gap:56px; align-items:center;}
+  .eyebrow{font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--blue-deep); margin:0 0 18px;}
+  .eyebrow::before{content:"$ "; color:var(--ink-soft);}
+  h1.hero-title{
+    font-family:'JetBrains Mono',monospace;
+    font-size:52px; line-height:1.06; letter-spacing:-0.02em;
+    margin:0 0 20px; font-weight:700;
+  }
+  .hero p.lede{font-size:17px; line-height:1.6; color:var(--ink-soft); max-width:46ch; margin:0 0 30px;}
+  .hero-ctas{display:flex; gap:12px; flex-wrap:wrap;}
+
+  .compile-card{
+    background:var(--code-bg); border-radius:6px; overflow:hidden;
+    box-shadow:0 18px 40px -18px rgba(23,27,38,0.45);
+    border:1px solid #262C3B;
+  }
+  .compile-card .cc-head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 14px; border-bottom:1px solid var(--code-line);
+  }
+  .cc-tabs{display:flex; gap:6px;}
+  .cc-tab{font-family:'JetBrains Mono',monospace; font-size:12px; color:#7A8194; padding:4px 9px; border-radius:3px;}
+  .cc-tab.active{background:#232A3B; color:var(--code-ink);}
+  .cc-dots{display:flex; gap:6px;}
+  .cc-dots span{width:8px; height:8px; border-radius:50%; background:#3A4155; display:block;}
+  pre.cc-body{
+    margin:0; padding:20px 18px; font-family:'JetBrains Mono',monospace;
+    font-size:13.5px; line-height:1.7; color:var(--code-ink); min-height:230px;
+    white-space:pre-wrap; word-break:break-word;
+  }
+  .cc-arrow{
+    text-align:center; font-family:'JetBrains Mono',monospace; color:#5B6376; font-size:12px;
+    padding:6px 0; border-top:1px dashed var(--code-line); border-bottom:1px dashed var(--code-line);
+    background:#1B2030;
+  }
+  .k{color:var(--tok-key);} .s{color:var(--tok-str);} .n{color:var(--tok-num);} .f{color:var(--tok-fn);} .c{color:var(--tok-com);}
+
+  /* ---------- pipeline strip ---------- */
+  .pipeline{padding:8px 0 72px;}
+  .pipeline-row{display:grid; grid-template-columns:repeat(4,1fr); gap:0; border:1px solid var(--line); border-radius:6px; overflow:hidden; background:#fff;}
+  .stage{padding:22px 20px; position:relative; border-right:1px solid var(--line);}
+  .stage:last-child{border-right:none;}
+  .stage .stage-no{font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--blue); margin-bottom:10px;}
+  .stage h3{margin:0 0 6px; font-size:16px; font-family:'JetBrains Mono',monospace;}
+  .stage p{margin:0; font-size:13.5px; color:var(--ink-soft); line-height:1.5;}
+  .stage::after{
+    content:"→"; position:absolute; right:-11px; top:50%; transform:translateY(-50%);
+    color:var(--ink-soft); background:var(--paper); width:20px; text-align:center; font-size:14px; z-index:2;
+  }
+  .stage:last-child::after{content:"";}
+
+  /* ---------- section shell ---------- */
+  section{padding:64px 0;}
+  .section-head{margin-bottom:36px; max-width:60ch;}
+  .section-head h2{font-family:'JetBrains Mono',monospace; font-size:28px; margin:0 0 10px; letter-spacing:-0.01em;}
+  .section-head p{margin:0; color:var(--ink-soft); font-size:15.5px; line-height:1.6;}
+
+  /* ---------- feature grid ---------- */
+  .feat-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:6px; overflow:hidden;}
+  .feat{background:#fff; padding:22px;}
+  .feat h4{margin:0 0 10px; font-size:15px; font-family:'JetBrains Mono',monospace;}
+  .feat code.snip{
+    display:block; background:var(--code-bg); color:var(--code-ink); font-size:12.5px;
+    padding:10px 12px; border-radius:4px; line-height:1.6; white-space:pre; overflow-x:auto;
+  }
+
+  /* ---------- builtin table ---------- */
+  .builtin-wrap{border:1px solid var(--line); border-radius:6px; overflow-x:auto; background:#fff;}
+  table{width:100%; border-collapse:collapse; font-size:14px;}
+  table th{
+    text-align:left; font-family:'JetBrains Mono',monospace; font-weight:600; font-size:12.5px;
+    color:var(--ink-soft); padding:12px 18px; border-bottom:1px solid var(--line); background:var(--paper-2);
+  }
+  table td{padding:13px 18px; border-bottom:1px solid var(--line); vertical-align:top;}
+  table tr:last-child td{border-bottom:none;}
+  table td.fname{font-family:'JetBrains Mono',monospace; color:var(--blue-deep); white-space:nowrap; font-size:13.5px;}
+
+  /* ---------- test suite ---------- */
+  .tests{border:1px solid var(--line); border-radius:6px; overflow:hidden; background:#fff;}
+  .test-row{display:flex; align-items:center; justify-content:space-between; padding:12px 18px; border-bottom:1px solid var(--line); font-size:14px;}
+  .test-row:last-child{border-bottom:none;}
+  .test-row .tname{font-family:'JetBrains Mono',monospace; color:var(--ink);}
+  .pass{display:flex; align-items:center; gap:7px; color:var(--green); font-size:12.5px; font-weight:600; font-family:'JetBrains Mono',monospace;}
+  .pass::before{content:"✓"; }
+
+  /* ---------- playground ---------- */
+  #playground{background:#fff; border-top:1px solid var(--line); border-bottom:1px solid var(--line);}
+  .pg-grid{display:grid; grid-template-columns:1fr 1fr; gap:0; border:1px solid var(--line); border-radius:6px; overflow:hidden;}
+  .pg-pane{display:flex; flex-direction:column; min-height:420px;}
+  .pg-pane + .pg-pane{border-left:1px solid var(--line);}
+  .pg-bar{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:10px 14px; border-bottom:1px solid var(--line); background:var(--paper-2);
+  }
+  .pg-bar .pg-label{font-family:'JetBrains Mono',monospace; font-size:12.5px; color:var(--ink-soft);}
+  select#example-select{
+    font-family:'JetBrains Mono',monospace; font-size:12.5px; padding:6px 8px; border-radius:4px;
+    border:1px solid var(--line); background:#fff; color:var(--ink);
+  }
+  textarea#code-input{
+    flex:1; border:none; resize:none; outline:none; padding:16px;
+    font-family:'JetBrains Mono',monospace; font-size:13.5px; line-height:1.7;
+    background:#fff; color:var(--ink); min-height:360px;
+  }
+  .out-tabs{display:flex; gap:4px;}
+  .out-tab{
+    font-family:'JetBrains Mono',monospace; font-size:12px; padding:5px 10px; border-radius:4px;
+    color:var(--ink-soft); cursor:pointer; border:1px solid transparent;
+  }
+  .out-tab.active{background:#fff; border-color:var(--line); color:var(--ink);}
+  .out-body{flex:1; margin:0; padding:16px; font-family:'JetBrains Mono',monospace; font-size:13.5px;
+    line-height:1.7; background:var(--code-bg); color:var(--code-ink); overflow:auto; white-space:pre-wrap; min-height:360px;}
+  .out-body.error-line{color:#FF8C8C;}
+  .pg-footer{display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-top:1px solid var(--line);}
+  .hint{font-size:12.5px; color:var(--ink-soft);}
+
+  footer{padding:40px 0 60px;}
+  .foot-row{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px; border-top:1px solid var(--line); padding-top:26px; font-size:13.5px; color:var(--ink-soft);}
+  .foot-row a{text-decoration:none; color:var(--ink);}
+
+  @media (max-width: 860px){
+    .hero-grid{grid-template-columns:1fr;}
+    h1.hero-title{font-size:38px;}
+    .pipeline-row{grid-template-columns:1fr 1fr;}
+    .stage::after{display:none;}
+    .feat-grid{grid-template-columns:1fr;}
+    .pg-grid{grid-template-columns:1fr;}
+    .pg-pane + .pg-pane{border-left:none; border-top:1px solid var(--line);}
+    .navlinks{display:none;}
+    .builtin-wrap{overflow-x:visible;}
+    table, table tbody, table tr, table td{display:block; width:100%;}
+    table thead{display:none;}
+    table tr{border-bottom:1px solid var(--line); padding:12px 0;}
+    table tr:last-child{border-bottom:none;}
+    table td{border-bottom:none; padding:3px 18px;}
+    table td.fname{padding-top:8px; font-weight:600;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="nav">
+    <div class="brand"><span class="dot"></span>AyuCompiler<small>.ayu → .js</small></div>
+    <nav class="navlinks">
+      <a href="#pipeline">Pipeline</a>
+      <a href="#features">Features</a>
+      <a href="#builtins">Built-ins</a>
+      <a href="#playground">Playground</a>
+    </nav>
+    <a class="btn btn-ghost" href="https://github.com/Ayushkumar055/AyuCompiler" target="_blank" rel="noopener">GitHub</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <p class="eyebrow">node ayucompiler run hello.ayu</p>
+        <h1 class="hero-title">A small language,<br/>compiled to JavaScript.</h1>
+        <p class="lede">AyuCompiler is a custom domain-specific language. Write <code>.ayu</code> source, and a hand-built lexer, recursive-descent parser and code generator turn it into clean, runnable ES6 — no dependencies, no VM.</p>
+        <div class="hero-ctas">
+          <a class="btn btn-primary" href="#playground">Try it in the playground</a>
+          <a class="btn btn-ghost" href="https://github.com/Ayushkumar055/AyuCompiler" target="_blank" rel="noopener">View source</a>
+        </div>
+      </div>
+
+      <div class="compile-card">
+        <div class="cc-head">
+          <div class="cc-tabs">
+            <span class="cc-tab" id="cc-tab-ayu">hello.ayu</span>
+            <span class="cc-tab" id="cc-tab-js">hello.js</span>
+          </div>
+          <div class="cc-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre class="cc-body" id="cc-body"></pre>
+        <div class="cc-arrow">compiles to →</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pipeline" id="pipeline">
+    <div class="wrap">
+      <div class="pipeline-row">
+        <div class="stage">
+          <div class="stage-no">01</div>
+          <h3>Lexer</h3>
+          <p>Scans raw <code>.ayu</code> text into a flat stream of tokens, tracking line and column for every one.</p>
+        </div>
+        <div class="stage">
+          <div class="stage-no">02</div>
+          <h3>Parser</h3>
+          <p>A recursive-descent parser turns the token stream into an Abstract Syntax Tree, enforcing grammar and operator precedence.</p>
+        </div>
+        <div class="stage">
+          <div class="stage-no">03</div>
+          <h3>AST</h3>
+          <p>The validated tree is walked once to check structure before anything is emitted.</p>
+        </div>
+        <div class="stage">
+          <div class="stage-no">04</div>
+          <h3>Code Generator</h3>
+          <p>Emits readable ES6 — same control flow, same names — ready for the Node.js runtime.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="features">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>What the language supports</h2>
+        <p>Everything a small imperative language needs: variables, control flow, functions and arrays, with real syntax errors instead of silent failures.</p>
+      </div>
+      <div class="feat-grid" id="feat-grid"></div>
+    </div>
+  </section>
+
+  <section id="builtins">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Built-in functions</h2>
+        <p>A small standard library, callable from any <code>.ayu</code> program.</p>
+      </div>
+      <div class="builtin-wrap">
+        <table>
+          <thead><tr><th>Function</th><th>Does</th></tr></thead>
+          <tbody id="builtin-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="tests">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Automated test suite</h2>
+        <p>Every language feature has a matching <code>.ayu</code> test file, run on every change.</p>
+      </div>
+      <div class="tests" id="test-list"></div>
+    </div>
+  </section>
+
+  <section id="playground">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Playground</h2>
+        <p>Pick an example or write your own <code>.ayu</code> code, then run it — right here, in your browser.</p>
+      </div>
+
+      <div class="pg-grid">
+        <div class="pg-pane">
+          <div class="pg-bar">
+            <span class="pg-label">source.ayu</span>
+            <select id="example-select"></select>
+          </div>
+          <textarea id="code-input" spellcheck="false"></textarea>
+          <div class="pg-footer">
+            <span class="hint">Uses <code>input()</code> / <code>inputNumber()</code>? Your browser will prompt for values.</span>
+            <button class="btn btn-primary" id="run-btn">Run ▸</button>
+          </div>
+        </div>
+        <div class="pg-pane">
+          <div class="pg-bar">
+            <span class="pg-label">Result</span>
+            <div class="out-tabs">
+              <span class="out-tab active" data-tab="output">Output</span>
+              <span class="out-tab" data-tab="js">Generated JS</span>
+            </div>
+          </div>
+          <pre class="out-body" id="out-body"></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot-row">
+    <span>AyuCompiler — built by Ayush Kumar.</span>
+    <a href="https://github.com/Ayushkumar055/AyuCompiler" target="_blank" rel="noopener">github.com/Ayushkumar055/AyuCompiler</a>
+  </div>
+</footer>
+
+<script>
+/* =========================================================
+   AyuCompiler engine: Lexer -> Parser -> AST -> JS CodeGen
+   ========================================================= */
+class AyuError extends Error {
+  constructor(kind, message, line, col) {
+    super(`Line ${line}, Column ${col} (${kind}): ${message}`);
+    this.kind = kind; this.line = line; this.col = col;
+  }
+}
+const KEYWORDS = new Set(["let","fn","return","if","else","while","for","in","break","continue","print","true","false"]);
+
+function ayuLex(src) {
+  const tokens = [];
+  let i = 0, line = 1, col = 1;
+  const peek = () => src[i];
+  const advance = () => { const c = src[i++]; if (c === "\n") { line++; col = 1; } else col++; return c; };
+  while (i < src.length) {
+    const c = peek();
+    if (c === " " || c === "\t" || c === "\r" || c === "\n") { advance(); continue; }
+    if (c === "/" && src[i+1] === "/") { while (i < src.length && peek() !== "\n") advance(); continue; }
+    const startLine = line, startCol = col;
+    if (/[0-9]/.test(c)) {
+      let s = ""; while (i < src.length && /[0-9.]/.test(peek())) s += advance();
+      tokens.push({ type: "NUMBER", value: parseFloat(s), line: startLine, col: startCol }); continue;
+    }
+    if (c === '"') {
+      advance(); let s = "";
+      while (i < src.length && peek() !== '"') {
+        if (peek() === "\n") throw new AyuError("LexError", "Unterminated string", startLine, startCol);
+        s += advance();
+      }
+      if (i >= src.length) throw new AyuError("LexError", "Unterminated string", startLine, startCol);
+      advance();
+      tokens.push({ type: "STRING", value: s, line: startLine, col: startCol }); continue;
+    }
+    if (/[A-Za-z_]/.test(c)) {
+      let s = ""; while (i < src.length && /[A-Za-z0-9_]/.test(peek())) s += advance();
+      tokens.push({ type: KEYWORDS.has(s) ? s.toUpperCase() : "IDENT", value: s, line: startLine, col: startCol }); continue;
+    }
+    const two = src.substr(i, 2);
+    if (["==","!=","<=",">=","&&","||"].includes(two)) {
+      advance(); advance();
+      tokens.push({ type: two, value: two, line: startLine, col: startCol }); continue;
+    }
+    if ("+-*/%=<>!(){}[],;".includes(c)) {
+      advance();
+      tokens.push({ type: c, value: c, line: startLine, col: startCol }); continue;
+    }
+    throw new AyuError("LexError", `Unexpected character '${c}'`, startLine, startCol);
+  }
+  tokens.push({ type: "EOF", value: null, line, col });
+  return tokens;
+}
+
+function ayuParse(tokens) {
+  let p = 0;
+  const cur = () => tokens[p];
+  const at = (type) => cur().type === type;
+  const advance = () => tokens[p++];
+  const expect = (type, what) => {
+    if (!at(type)) throw new AyuError("ParserError", `Expected ${what || type} but found '${cur().value ?? cur().type}'`, cur().line, cur().col);
+    return advance();
+  };
+  function program() { const body = []; while (!at("EOF")) body.push(statement()); return { type: "Program", body }; }
+  function block() {
+    expect("{", "'{'"); const body = [];
+    while (!at("}") && !at("EOF")) body.push(statement());
+    expect("}", "'}'"); return { type: "Block", body };
+  }
+  function statement() {
+    if (at("LET")) return varDecl();
+    if (at("FN")) return fnDecl();
+    if (at("IF")) return ifStmt();
+    if (at("WHILE")) return whileStmt();
+    if (at("FOR")) return forInStmt();
+    if (at("RETURN")) return returnStmt();
+    if (at("BREAK")) { advance(); expect(";", "';'"); return { type: "BreakStmt" }; }
+    if (at("CONTINUE")) { advance(); expect(";", "';'"); return { type: "ContinueStmt" }; }
+    if (at("PRINT")) return printStmt();
+    if (at("{")) return block();
+    return exprStmt();
+  }
+  function varDecl() {
+    advance(); const name = expect("IDENT", "identifier").value;
+    expect("=", "'='"); const init = expr(); expect(";", "';'");
+    return { type: "VarDecl", name, init };
+  }
+  function fnDecl() {
+    advance(); const name = expect("IDENT", "identifier").value;
+    expect("(", "'('"); const params = [];
+    if (!at(")")) { params.push(expect("IDENT", "identifier").value); while (at(",")) { advance(); params.push(expect("IDENT", "identifier").value); } }
+    expect(")", "')'"); const body = block();
+    return { type: "FnDecl", name, params, body };
+  }
+  function ifStmt() {
+    advance(); expect("(", "'('"); const test = expr(); expect(")", "')'");
+    const consequent = block(); let alternate = null;
+    if (at("ELSE")) { advance(); alternate = at("IF") ? ifStmt() : block(); }
+    return { type: "IfStmt", test, consequent, alternate };
+  }
+  function whileStmt() {
+    advance(); expect("(", "'('"); const test = expr(); expect(")", "')'");
+    const body = block(); return { type: "WhileStmt", test, body };
+  }
+  function forInStmt() {
+    advance(); const varName = expect("IDENT", "identifier").value;
+    expect("IN", "'in'"); const iterable = expr(); const body = block();
+    return { type: "ForInStmt", varName, iterable, body };
+  }
+  function returnStmt() {
+    advance(); let arg = null; if (!at(";")) arg = expr(); expect(";", "';'");
+    return { type: "ReturnStmt", arg };
+  }
+  function printStmt() { advance(); const arg = expr(); expect(";", "';'"); return { type: "PrintStmt", arg }; }
+  function exprStmt() {
+    if (at("IDENT")) {
+      const save = p; const name = advance().value; let target = { type: "Identifier", name };
+      if (at("[")) { advance(); const index = expr(); expect("]", "']'"); target = { type: "IndexExpr", object: target, index }; }
+      if (at("=")) { advance(); const value = expr(); expect(";", "';'"); return { type: "AssignStmt", target, value }; }
+      p = save;
+    }
+    const e = expr(); expect(";", "';'"); return { type: "ExprStmt", expr: e };
+  }
+  function expr() { return logicalOr(); }
+  function logicalOr() { let left = logicalAnd(); while (at("||")) { advance(); left = { type: "Logical", op: "||", left, right: logicalAnd() }; } return left; }
+  function logicalAnd() { let left = equality(); while (at("&&")) { advance(); left = { type: "Logical", op: "&&", left, right: equality() }; } return left; }
+  function equality() { let left = relational(); while (at("==") || at("!=")) { const op = advance().type; left = { type: "Binary", op, left, right: relational() }; } return left; }
+  function relational() { let left = additive(); while (["<",">","<=",">="].includes(cur().type)) { const op = advance().type; left = { type: "Binary", op, left, right: additive() }; } return left; }
+  function additive() { let left = multiplicative(); while (at("+") || at("-")) { const op = advance().type; left = { type: "Binary", op, left, right: multiplicative() }; } return left; }
+  function multiplicative() { let left = unary(); while (at("*") || at("/") || at("%")) { const op = advance().type; left = { type: "Binary", op, left, right: unary() }; } return left; }
+  function unary() { if (at("!") || at("-")) { const op = advance().type; return { type: "Unary", op, arg: unary() }; } return postfix(); }
+  function postfix() {
+    let e = primary();
+    for (;;) {
+      if (at("(")) { advance(); const args = []; if (!at(")")) { args.push(expr()); while (at(",")) { advance(); args.push(expr()); } } expect(")", "')'"); e = { type: "Call", callee: e, args }; }
+      else if (at("[")) { advance(); const index = expr(); expect("]", "']'"); e = { type: "IndexExpr", object: e, index }; }
+      else break;
+    }
+    return e;
+  }
+  function primary() {
+    const t = cur();
+    if (at("NUMBER")) { advance(); return { type: "NumberLit", value: t.value }; }
+    if (at("STRING")) { advance(); return { type: "StringLit", value: t.value }; }
+    if (at("TRUE")) { advance(); return { type: "BoolLit", value: true }; }
+    if (at("FALSE")) { advance(); return { type: "BoolLit", value: false }; }
+    if (at("IDENT")) { advance(); return { type: "Identifier", name: t.value }; }
+    if (at("(")) { advance(); const e = expr(); expect(")", "')'"); return e; }
+    if (at("[")) {
+      advance(); const items = [];
+      if (!at("]")) { items.push(expr()); while (at(",")) { advance(); items.push(expr()); } }
+      expect("]", "']'"); return { type: "ArrayLit", items };
+    }
+    throw new AyuError("ParserError", `Unexpected token '${t.value ?? t.type}'`, t.line, t.col);
+  }
+  return program();
+}
+
+const JS_OP = { "==":"===", "!=":"!==" };
+function ayuGenerate(ast) {
+  let out = "";
+  const w = (s) => { out += s; };
+  function genBlock(node, indent) { w("{\n"); for (const s of node.body) genStmt(s, indent + "  "); w(indent + "}"); }
+  function genStmt(node, indent) {
+    switch (node.type) {
+      case "VarDecl": w(`${indent}let ${node.name} = ${genExpr(node.init)};\n`); break;
+      case "AssignStmt": w(`${indent}${genExpr(node.target)} = ${genExpr(node.value)};\n`); break;
+      case "FnDecl": w(`${indent}function ${node.name}(${node.params.join(", ")}) `); genBlock(node.body, indent); w("\n"); break;
+      case "IfStmt":
+        w(`${indent}if (${genExpr(node.test)}) `); genBlock(node.consequent, indent);
+        if (node.alternate) {
+          w(" else ");
+          if (node.alternate.type === "IfStmt") {
+            const savedOut = out; out = "";
+            genStmt(node.alternate, indent);
+            const nested = out.replace(new RegExp("^" + indent), "");
+            out = savedOut + nested.replace(/\n$/, "");
+          } else { genBlock(node.alternate, indent); }
+        }
+        w("\n"); break;
+      case "WhileStmt": w(`${indent}while (${genExpr(node.test)}) `); genBlock(node.body, indent); w("\n"); break;
+      case "ForInStmt": w(`${indent}for (const ${node.varName} of ${genExpr(node.iterable)}) `); genBlock(node.body, indent); w("\n"); break;
+      case "ReturnStmt": w(`${indent}return${node.arg ? " " + genExpr(node.arg) : ""};\n`); break;
+      case "BreakStmt": w(`${indent}break;\n`); break;
+      case "ContinueStmt": w(`${indent}continue;\n`); break;
+      case "PrintStmt": w(`${indent}print(${genExpr(node.arg)});\n`); break;
+      case "Block": genBlock(node, indent); w("\n"); break;
+      case "ExprStmt": w(`${indent}${genExpr(node.expr)};\n`); break;
+      default: throw new Error("Unknown stmt " + node.type);
+    }
+  }
+  function genExpr(node) {
+    switch (node.type) {
+      case "NumberLit": return String(node.value);
+      case "StringLit": return JSON.stringify(node.value);
+      case "BoolLit": return String(node.value);
+      case "Identifier": return node.name;
+      case "ArrayLit": return `[${node.items.map(genExpr).join(", ")}]`;
+      case "IndexExpr": return `${genExpr(node.object)}[${genExpr(node.index)}]`;
+      case "Unary": return `${node.op}${genExpr(node.arg)}`;
+      case "Binary": return `(${genExpr(node.left)} ${JS_OP[node.op] || node.op} ${genExpr(node.right)})`;
+      case "Logical": return `(${genExpr(node.left)} ${node.op} ${genExpr(node.right)})`;
+      case "Call": {
+        const calleeName = node.callee.type === "Identifier" ? node.callee.name : null;
+        const args = node.args.map(genExpr).join(", ");
+        return `${calleeName || genExpr(node.callee)}(${args})`;
+      }
+      default: throw new Error("Unknown expr " + node.type);
+    }
+  }
+  for (const s of ast.body) genStmt(s, "");
+  return out;
+}
+function ayuCompile(src) { return ayuGenerate(ayuParse(ayuLex(src))); }
+
+function ayuRun(src) {
+  const output = [];
+  const AYU = {
+    length: (c) => c.length,
+    contains: (c, v) => c.includes(v),
+    indexOf: (c, v) => c.indexOf(v),
+    push: (a, v) => { a.push(v); return a; },
+    pop: (a) => a.pop(),
+    upper: (s) => String(s).toUpperCase(),
+    lower: (s) => String(s).toLowerCase(),
+    input: (prompt) => { const v = window.prompt(prompt ?? "") ?? ""; output.push(String(prompt ?? "") + v); return v; },
+    inputNumber: (prompt) => { const v = Number(window.prompt(prompt ?? "") ?? "0"); output.push(String(prompt ?? "") + v); return v; },
+  };
+  const print = (v) => output.push(Array.isArray(v) ? JSON.stringify(v) : String(v));
+  const js = ayuCompile(src);
+  const fn = new Function("AYU", "print", `
+    const { length, contains, indexOf, push, pop, upper, lower, input, inputNumber } = AYU;
+    ${js}
+  `);
+  fn(AYU, print);
+  return { js, output };
+}
+
+/* =========================================================
+   Page content + wiring
+   ========================================================= */
+const EXAMPLES = {
+  "hello.ayu": `let score = 95;\nprint "Score is:";\nprint score;`,
+  "functions.ayu": `fn add(a, b) {\n  return a + b;\n}\n\nlet total = (add(2, 3) + 4) * 2;\nprint total;`,
+  "nested_if.ayu": `let age = 20;\nif (age >= 18) {\n  if (age >= 65) {\n    print "Senior";\n  } else {\n    print "Adult";\n  }\n} else {\n  print "Minor";\n}`,
+  "loops.ayu": `let i = 0;\nwhile (i < 2) {\n  for item in [1, 2, 3] {\n    print item;\n  }\n  i = i + 1;\n}`,
+  "arrays.ayu": `let arr = [1, 2, 3];\npush(arr, 50);\nprint arr;\nprint contains(arr, 50);\nprint indexOf(arr, 2);\npop(arr);\nprint arr;\nprint length(arr);`,
+  "precedence.ayu": `let total = 10 + 5 * 2;\nprint total;`,
+  "error.ayu": `let x = ;`,
+};
+
+const FEATURES = [
+  { title: "Variables", code: `let score = 95;\nlet name = "Ayu";` },
+  { title: "Arithmetic & precedence", code: `let total = (a + b) * 2;\n// 10 + 5 * 2 → 20` },
+  { title: "Conditionals", code: `if (age >= 18) {\n  print "Adult";\n} else {\n  print "Minor";\n}` },
+  { title: "Loops & control", code: `for item in list {\n  if (item == 0) { continue; }\n  print item;\n}` },
+  { title: "Functions", code: `fn add(a, b) {\n  return a + b;\n}` },
+  { title: "Arrays", code: `push(arr, 50);\npop(arr);\nlength(arr);` },
+  { title: "Strings", code: `upper(str);\nlower(str);` },
+  { title: "Console I/O", code: `let x = inputNumber("Age: ");` },
+  { title: "Diagnostics", code: `// Line 4, Column 15\n// (ParserError)` },
+];
+
+const BUILTINS = [
+  ["length(collection)", "Returns array element count or string length."],
+  ["contains(collection, value)", "True if the value exists in the collection."],
+  ["indexOf(collection, value)", "0-based index of a value, or -1."],
+  ["push(array, value)", "Appends a value to the end of an array."],
+  ["pop(array)", "Removes and returns the last element."],
+  ["upper(string) / lower(string)", "Converts text case."],
+  ["input(prompt) / inputNumber(prompt)", "Reads string or numeric input."],
+];
+
+const TESTS = [
+  "hello.ayu — variables, arithmetic, printing",
+  "functions.ayu — functions, parameters, return",
+  "nested_if.ayu — nested conditional blocks",
+  "nested_loops.ayu — nested for-in and while",
+  "arrays.ayu — indexing, push, pop, contains, indexOf",
+  "precedence.ayu — operator precedence",
+  "input.ayu — interactive prompt handling",
+  "error.ayu — syntax errors with line/column",
+];
+
+function esc(s){ return s.replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
+
+// token-based syntax highlighter (avoids corrupting already-inserted HTML)
+const HL_KEYWORDS = new Set(["let","fn","return","if","else","while","for","in","print","true","false","break","continue"]);
+function highlight(code) {
+  let out = "";
+  let i = 0;
+  const n = code.length;
+  while (i < n) {
+    const c = code[i];
+    // line comment
+    if (c === "/" && code[i+1] === "/") {
+      let j = i;
+      while (j < n && code[j] !== "\n") j++;
+      out += `<span class="c">${esc(code.slice(i, j))}</span>`;
+      i = j;
+      continue;
+    }
+    // string
+    if (c === '"') {
+      let j = i + 1;
+      while (j < n && code[j] !== '"') j++;
+      j = Math.min(j + 1, n);
+      out += `<span class="s">${esc(code.slice(i, j))}</span>`;
+      i = j;
+      continue;
+    }
+    // number
+    if (/[0-9]/.test(c)) {
+      let j = i;
+      while (j < n && /[0-9.]/.test(code[j])) j++;
+      out += `<span class="n">${esc(code.slice(i, j))}</span>`;
+      i = j;
+      continue;
+    }
+    // identifier / keyword / function-call name
+    if (/[A-Za-z_]/.test(c)) {
+      let j = i;
+      while (j < n && /[A-Za-z0-9_]/.test(code[j])) j++;
+      const word = code.slice(i, j);
+      if (HL_KEYWORDS.has(word)) out += `<span class="k">${esc(word)}</span>`;
+      else if (code[j] === "(") out += `<span class="f">${esc(word)}</span>`;
+      else out += esc(word);
+      i = j;
+      continue;
+    }
+    out += esc(c);
+    i++;
+  }
+  return out;
+}
+
+// hero card cycling
+const heroAyu = EXAMPLES["hello.ayu"];
+let heroJs = "";
+try { heroJs = ayuCompile(heroAyu); } catch(e) { heroJs = "// compile error"; }
+const ccBody = document.getElementById("cc-body");
+const tabAyu = document.getElementById("cc-tab-ayu");
+const tabJs = document.getElementById("cc-tab-js");
+function showHero(which) {
+  if (which === "ayu") { ccBody.innerHTML = highlight(heroAyu); tabAyu.classList.add("active"); tabJs.classList.remove("active"); }
+  else { ccBody.innerHTML = highlight(heroJs); tabJs.classList.add("active"); tabAyu.classList.remove("active"); }
+}
+showHero("ayu");
+let heroShowing = "ayu";
+setInterval(() => { heroShowing = heroShowing === "ayu" ? "js" : "ayu"; showHero(heroShowing); }, 3400);
+
+// features grid
+const featGrid = document.getElementById("feat-grid");
+featGrid.innerHTML = FEATURES.map(f => `
+  <div class="feat">
+    <h4>${f.title}</h4>
+    <code class="snip">${highlight(f.code)}</code>
+  </div>
+`).join("");
+
+// builtins table
+document.getElementById("builtin-body").innerHTML = BUILTINS.map(([name, desc]) => `
+  <tr><td class="fname">${esc(name)}</td><td>${esc(desc)}</td></tr>
+`).join("");
+
+// tests
+document.getElementById("test-list").innerHTML = TESTS.map(t => `
+  <div class="test-row"><span class="tname">${esc(t)}</span><span class="pass">PASSED</span></div>
+`).join("");
+
+// playground
+const exampleSelect = document.getElementById("example-select");
+exampleSelect.innerHTML = Object.keys(EXAMPLES).map(k => `<option value="${k}">${k}</option>`).join("");
+const codeInput = document.getElementById("code-input");
+const outBody = document.getElementById("out-body");
+const runBtn = document.getElementById("run-btn");
+const outTabs = document.querySelectorAll(".out-tab");
+let lastResult = { output: [], js: "", isError: false };
+let activeTab = "output";
+
+function loadExample(name) { codeInput.value = EXAMPLES[name]; }
+loadExample("hello.ayu");
+exampleSelect.addEventListener("change", () => loadExample(exampleSelect.value));
+
+function renderOutput() {
+  const showError = activeTab === "output" && lastResult.isError;
+  outBody.classList.toggle("error-line", showError);
+  if (activeTab === "js") {
+    outBody.textContent = lastResult.js || "// nothing compiled yet";
+  } else {
+    outBody.textContent = lastResult.output.length ? lastResult.output.join("\n") : "// run your program to see output here";
+  }
+}
+outTabs.forEach(tab => tab.addEventListener("click", () => {
+  outTabs.forEach(t => t.classList.remove("active"));
+  tab.classList.add("active");
+  activeTab = tab.dataset.tab;
+  renderOutput();
+}));
+
+function runCode() {
+  try {
+    const { js, output } = ayuRun(codeInput.value);
+    lastResult = { js, output, isError: false };
+  } catch (e) {
+    lastResult = { js: lastResult.js, output: [e.message || String(e)], isError: true };
+    outTabs.forEach(t => t.classList.remove("active"));
+    document.querySelector('.out-tab[data-tab="output"]').classList.add("active");
+    activeTab = "output";
+  }
+  renderOutput();
+}
+runBtn.addEventListener("click", runCode);
+runCode();
+</script>
+</body>
+</html>
