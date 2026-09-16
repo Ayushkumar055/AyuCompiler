@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>AyuCompiler — a .ayu to JavaScript transpiler</title>
+<title>AyuCompiler — a JavaScript interpreter, built from scratch</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -32,24 +32,12 @@
   }
   *{box-sizing:border-box;}
   html{scroll-behavior:smooth;}
-  body{
-    margin:0;
-    background:var(--paper);
-    color:var(--ink);
-    font-family:'Inter',sans-serif;
-    -webkit-font-smoothing:antialiased;
-  }
+  body{margin:0; background:var(--paper); color:var(--ink); font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased;}
   .wrap{max-width:var(--maxw); margin:0 auto; padding:0 28px;}
   code, .mono{font-family:'JetBrains Mono',monospace;}
   a{color:inherit;}
 
-  /* ---------- nav ---------- */
-  header{
-    position:sticky; top:0; z-index:40;
-    background:rgba(238,240,241,0.92);
-    backdrop-filter:blur(6px);
-    border-bottom:1px solid var(--line);
-  }
+  header{position:sticky; top:0; z-index:40; background:rgba(238,240,241,0.92); backdrop-filter:blur(6px); border-bottom:1px solid var(--line);}
   .nav{display:flex; align-items:center; justify-content:space-between; padding:16px 28px; max-width:var(--maxw); margin:0 auto;}
   .brand{display:flex; align-items:center; gap:10px; font-family:'JetBrains Mono',monospace; font-weight:700; font-size:17px; letter-spacing:-0.02em;}
   .brand .dot{width:9px; height:9px; background:var(--blue); border-radius:50%; display:inline-block;}
@@ -57,57 +45,31 @@
   .navlinks{display:flex; align-items:center; gap:26px; font-size:14.5px;}
   .navlinks a{text-decoration:none; color:var(--ink-soft); transition:color .15s;}
   .navlinks a:hover{color:var(--ink);}
-  .btn{
-    display:inline-flex; align-items:center; gap:8px;
-    padding:9px 16px; border-radius:var(--radius);
-    font-size:14.5px; font-weight:600; text-decoration:none;
-    border:1px solid transparent; cursor:pointer;
-  }
+  .btn{display:inline-flex; align-items:center; gap:8px; padding:9px 16px; border-radius:var(--radius); font-size:14.5px; font-weight:600; text-decoration:none; border:1px solid transparent; cursor:pointer;}
   .btn-primary{background:var(--blue); color:#fff;}
   .btn-primary:hover{background:var(--blue-deep);}
   .btn-ghost{border-color:var(--line); color:var(--ink);}
   .btn-ghost:hover{border-color:var(--ink-soft);}
 
-  /* ---------- hero ---------- */
   .hero{padding:76px 0 64px;}
   .hero-grid{display:grid; grid-template-columns:1.05fr 1fr; gap:56px; align-items:center;}
   .eyebrow{font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--blue-deep); margin:0 0 18px;}
   .eyebrow::before{content:"$ "; color:var(--ink-soft);}
-  h1.hero-title{
-    font-family:'JetBrains Mono',monospace;
-    font-size:52px; line-height:1.06; letter-spacing:-0.02em;
-    margin:0 0 20px; font-weight:700;
-  }
-  .hero p.lede{font-size:17px; line-height:1.6; color:var(--ink-soft); max-width:46ch; margin:0 0 30px;}
+  h1.hero-title{font-family:'JetBrains Mono',monospace; font-size:50px; line-height:1.08; letter-spacing:-0.02em; margin:0 0 20px; font-weight:700;}
+  .hero p.lede{font-size:17px; line-height:1.6; color:var(--ink-soft); max-width:48ch; margin:0 0 30px;}
   .hero-ctas{display:flex; gap:12px; flex-wrap:wrap;}
 
-  .compile-card{
-    background:var(--code-bg); border-radius:6px; overflow:hidden;
-    box-shadow:0 18px 40px -18px rgba(23,27,38,0.45);
-    border:1px solid #262C3B;
-  }
-  .compile-card .cc-head{
-    display:flex; align-items:center; justify-content:space-between;
-    padding:10px 14px; border-bottom:1px solid var(--code-line);
-  }
+  .compile-card{background:var(--code-bg); border-radius:6px; overflow:hidden; box-shadow:0 18px 40px -18px rgba(23,27,38,0.45); border:1px solid #262C3B;}
+  .compile-card .cc-head{display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border-bottom:1px solid var(--code-line);}
   .cc-tabs{display:flex; gap:6px;}
   .cc-tab{font-family:'JetBrains Mono',monospace; font-size:12px; color:#7A8194; padding:4px 9px; border-radius:3px;}
   .cc-tab.active{background:#232A3B; color:var(--code-ink);}
   .cc-dots{display:flex; gap:6px;}
   .cc-dots span{width:8px; height:8px; border-radius:50%; background:#3A4155; display:block;}
-  pre.cc-body{
-    margin:0; padding:20px 18px; font-family:'JetBrains Mono',monospace;
-    font-size:13.5px; line-height:1.7; color:var(--code-ink); min-height:230px;
-    white-space:pre-wrap; word-break:break-word;
-  }
-  .cc-arrow{
-    text-align:center; font-family:'JetBrains Mono',monospace; color:#5B6376; font-size:12px;
-    padding:6px 0; border-top:1px dashed var(--code-line); border-bottom:1px dashed var(--code-line);
-    background:#1B2030;
-  }
+  pre.cc-body{margin:0; padding:20px 18px; font-family:'JetBrains Mono',monospace; font-size:13.5px; line-height:1.7; color:var(--code-ink); min-height:230px; white-space:pre-wrap; word-break:break-word;}
+  .cc-foot{text-align:center; font-family:'JetBrains Mono',monospace; color:#7EE787; font-size:12px; padding:8px 0; border-top:1px dashed var(--code-line); background:#1B2030;}
   .k{color:var(--tok-key);} .s{color:var(--tok-str);} .n{color:var(--tok-num);} .f{color:var(--tok-fn);} .c{color:var(--tok-com);}
 
-  /* ---------- pipeline strip ---------- */
   .pipeline{padding:8px 0 72px;}
   .pipeline-row{display:grid; grid-template-columns:repeat(4,1fr); gap:0; border:1px solid var(--line); border-radius:6px; overflow:hidden; background:#fff;}
   .stage{padding:22px 20px; position:relative; border-right:1px solid var(--line);}
@@ -115,39 +77,26 @@
   .stage .stage-no{font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--blue); margin-bottom:10px;}
   .stage h3{margin:0 0 6px; font-size:16px; font-family:'JetBrains Mono',monospace;}
   .stage p{margin:0; font-size:13.5px; color:var(--ink-soft); line-height:1.5;}
-  .stage::after{
-    content:"→"; position:absolute; right:-11px; top:50%; transform:translateY(-50%);
-    color:var(--ink-soft); background:var(--paper); width:20px; text-align:center; font-size:14px; z-index:2;
-  }
+  .stage::after{content:"→"; position:absolute; right:-11px; top:50%; transform:translateY(-50%); color:var(--ink-soft); background:var(--paper); width:20px; text-align:center; font-size:14px; z-index:2;}
   .stage:last-child::after{content:"";}
 
-  /* ---------- section shell ---------- */
   section{padding:64px 0;}
-  .section-head{margin-bottom:36px; max-width:60ch;}
+  .section-head{margin-bottom:36px; max-width:64ch;}
   .section-head h2{font-family:'JetBrains Mono',monospace; font-size:28px; margin:0 0 10px; letter-spacing:-0.01em;}
   .section-head p{margin:0; color:var(--ink-soft); font-size:15.5px; line-height:1.6;}
 
-  /* ---------- feature grid ---------- */
   .feat-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:6px; overflow:hidden;}
   .feat{background:#fff; padding:22px;}
   .feat h4{margin:0 0 10px; font-size:15px; font-family:'JetBrains Mono',monospace;}
-  .feat code.snip{
-    display:block; background:var(--code-bg); color:var(--code-ink); font-size:12.5px;
-    padding:10px 12px; border-radius:4px; line-height:1.6; white-space:pre; overflow-x:auto;
-  }
+  .feat code.snip{display:block; background:var(--code-bg); color:var(--code-ink); font-size:12.5px; padding:10px 12px; border-radius:4px; line-height:1.6; white-space:pre; overflow-x:auto;}
 
-  /* ---------- builtin table ---------- */
   .builtin-wrap{border:1px solid var(--line); border-radius:6px; overflow-x:auto; background:#fff;}
   table{width:100%; border-collapse:collapse; font-size:14px;}
-  table th{
-    text-align:left; font-family:'JetBrains Mono',monospace; font-weight:600; font-size:12.5px;
-    color:var(--ink-soft); padding:12px 18px; border-bottom:1px solid var(--line); background:var(--paper-2);
-  }
+  table th{text-align:left; font-family:'JetBrains Mono',monospace; font-weight:600; font-size:12.5px; color:var(--ink-soft); padding:12px 18px; border-bottom:1px solid var(--line); background:var(--paper-2);}
   table td{padding:13px 18px; border-bottom:1px solid var(--line); vertical-align:top;}
   table tr:last-child td{border-bottom:none;}
   table td.fname{font-family:'JetBrains Mono',monospace; color:var(--blue-deep); white-space:nowrap; font-size:13.5px;}
 
-  /* ---------- test suite ---------- */
   .tests{border:1px solid var(--line); border-radius:6px; overflow:hidden; background:#fff;}
   .test-row{display:flex; align-items:center; justify-content:space-between; padding:12px 18px; border-bottom:1px solid var(--line); font-size:14px;}
   .test-row:last-child{border-bottom:none;}
@@ -155,45 +104,25 @@
   .pass{display:flex; align-items:center; gap:7px; color:var(--green); font-size:12.5px; font-weight:600; font-family:'JetBrains Mono',monospace;}
   .pass::before{content:"✓"; }
 
-  /* ---------- playground ---------- */
   #playground{background:#fff; border-top:1px solid var(--line); border-bottom:1px solid var(--line);}
+  .subset-note{margin-top:18px; padding:14px 16px; border:1px solid #D6DBE2; border-left:3px solid var(--blue); background:#F4F6F9; border-radius:4px; font-size:13.5px; color:var(--ink); line-height:1.65; max-width:720px;}
+  .subset-note strong{display:block; margin-bottom:4px;}
+  .subset-note code{background:rgba(0,0,0,0.06); padding:1px 5px; border-radius:3px; font-size:12.5px;}
+  .subset-grid{display:grid; grid-template-columns:1fr 1fr; gap:2px 22px; margin-top:8px; font-size:13px;}
+  .subset-grid .yes::before{content:"✓ "; color:var(--green); font-weight:700;}
+  .subset-grid .no::before{content:"✗ "; color:var(--red); font-weight:700;}
 
-  .not-js-note{
-    margin-top:18px; padding:14px 16px; border:1px solid #E8D3A0; border-left:3px solid var(--amber);
-    background:#FBF4E3; border-radius:4px; font-size:13.5px; color:var(--ink); line-height:1.6; max-width:640px;
-  }
-  .not-js-note code{background:rgba(0,0,0,0.06); padding:1px 5px; border-radius:3px; font-size:12.5px;}
-  .not-js-note a{color:var(--blue-deep); text-decoration:underline;}
-  .not-js-table{margin:10px 0 8px; display:grid; gap:5px;}
-  .not-js-table > div{display:grid; grid-template-columns:1fr 20px 1fr; align-items:center; gap:8px; font-family:'JetBrains Mono',monospace; font-size:12px;}
-  .njs-js{color:#B23B3B; background:rgba(178,59,59,0.08); padding:3px 7px; border-radius:3px;}
-  .njs-ayu{color:var(--green); background:rgba(34,122,91,0.08); padding:3px 7px; border-radius:3px;}
-  .njs-arrow{color:var(--ink-soft); text-align:center;}
   .pg-grid{display:grid; grid-template-columns:1fr 1fr; gap:0; border:1px solid var(--line); border-radius:6px; overflow:hidden;}
   .pg-pane{display:flex; flex-direction:column; min-height:420px;}
   .pg-pane + .pg-pane{border-left:1px solid var(--line);}
-  .pg-bar{
-    display:flex; align-items:center; justify-content:space-between; gap:10px;
-    padding:10px 14px; border-bottom:1px solid var(--line); background:var(--paper-2);
-  }
+  .pg-bar{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 14px; border-bottom:1px solid var(--line); background:var(--paper-2);}
   .pg-bar .pg-label{font-family:'JetBrains Mono',monospace; font-size:12.5px; color:var(--ink-soft);}
-  select#example-select{
-    font-family:'JetBrains Mono',monospace; font-size:12.5px; padding:6px 8px; border-radius:4px;
-    border:1px solid var(--line); background:#fff; color:var(--ink);
-  }
-  textarea#code-input{
-    flex:1; border:none; resize:none; outline:none; padding:16px;
-    font-family:'JetBrains Mono',monospace; font-size:13.5px; line-height:1.7;
-    background:#fff; color:var(--ink); min-height:360px;
-  }
+  select#example-select{font-family:'JetBrains Mono',monospace; font-size:12.5px; padding:6px 8px; border-radius:4px; border:1px solid var(--line); background:#fff; color:var(--ink);}
+  textarea#code-input{flex:1; border:none; resize:none; outline:none; padding:16px; font-family:'JetBrains Mono',monospace; font-size:13.5px; line-height:1.7; background:#fff; color:var(--ink); min-height:360px;}
   .out-tabs{display:flex; gap:4px;}
-  .out-tab{
-    font-family:'JetBrains Mono',monospace; font-size:12px; padding:5px 10px; border-radius:4px;
-    color:var(--ink-soft); cursor:pointer; border:1px solid transparent;
-  }
+  .out-tab{font-family:'JetBrains Mono',monospace; font-size:12px; padding:5px 10px; border-radius:4px; color:var(--ink-soft); cursor:pointer; border:1px solid transparent;}
   .out-tab.active{background:#fff; border-color:var(--line); color:var(--ink);}
-  .out-body{flex:1; margin:0; padding:16px; font-family:'JetBrains Mono',monospace; font-size:13.5px;
-    line-height:1.7; background:var(--code-bg); color:var(--code-ink); overflow:auto; white-space:pre-wrap; min-height:360px;}
+  .out-body{flex:1; margin:0; padding:16px; font-family:'JetBrains Mono',monospace; font-size:13.5px; line-height:1.7; background:var(--code-bg); color:var(--code-ink); overflow:auto; white-space:pre-wrap; min-height:360px;}
   .out-body.error-line{color:#FF8C8C;}
   .pg-footer{display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-top:1px solid var(--line);}
   .hint{font-size:12.5px; color:var(--ink-soft);}
@@ -204,14 +133,14 @@
 
   @media (max-width: 860px){
     .hero-grid{grid-template-columns:1fr;}
-    h1.hero-title{font-size:38px;}
+    h1.hero-title{font-size:36px;}
     .pipeline-row{grid-template-columns:1fr 1fr;}
     .stage::after{display:none;}
     .feat-grid{grid-template-columns:1fr;}
     .pg-grid{grid-template-columns:1fr;}
     .pg-pane + .pg-pane{border-left:none; border-top:1px solid var(--line);}
     .navlinks{display:none;}
-    .builtin-wrap{overflow-x:visible;}
+    .subset-grid{grid-template-columns:1fr;}
     table, table tbody, table tr, table td{display:block; width:100%;}
     table thead{display:none;}
     table tr{border-bottom:1px solid var(--line); padding:12px 0;}
@@ -225,11 +154,11 @@
 
 <header>
   <div class="nav">
-    <div class="brand"><span class="dot"></span>AyuCompiler<small>.ayu → .js</small></div>
+    <div class="brand"><span class="dot"></span>AyuCompiler<small>a JS interpreter</small></div>
     <nav class="navlinks">
       <a href="#pipeline">Pipeline</a>
       <a href="#features">Features</a>
-      <a href="#builtins">Built-ins</a>
+      <a href="#builtins">Supported</a>
       <a href="#playground">Playground</a>
     </nav>
     <a class="btn btn-ghost" href="https://github.com/Ayushkumar055/AyuCompiler" target="_blank" rel="noopener">GitHub</a>
@@ -240,9 +169,9 @@
   <section class="hero">
     <div class="wrap hero-grid">
       <div>
-        <p class="eyebrow">node ayucompiler run hello.ayu</p>
-        <h1 class="hero-title">A small language,<br/>compiled to JavaScript.</h1>
-        <p class="lede">AyuCompiler is a custom domain-specific language. Write <code>.ayu</code> source, and a hand-built lexer, recursive-descent parser and code generator turn it into clean, runnable ES6 — no dependencies, no VM.</p>
+        <p class="eyebrow">node ayucompiler run script.js</p>
+        <h1 class="hero-title">A JavaScript<br/>interpreter, built<br/>from scratch.</h1>
+        <p class="lede">AyuCompiler is a JavaScript engine written in JavaScript. Write real <code>.js</code> code — variables, functions, closures, loops, arrays — and a hand-built lexer, recursive-descent parser and tree-walking evaluator run it directly. No <code>eval</code>, no <code>Function()</code>, no shortcuts.</p>
         <div class="hero-ctas">
           <a class="btn btn-primary" href="#playground">Try it in the playground</a>
           <a class="btn btn-ghost" href="https://github.com/Ayushkumar055/AyuCompiler" target="_blank" rel="noopener">View source</a>
@@ -251,14 +180,11 @@
 
       <div class="compile-card">
         <div class="cc-head">
-          <div class="cc-tabs">
-            <span class="cc-tab" id="cc-tab-ayu">hello.ayu</span>
-            <span class="cc-tab" id="cc-tab-js">hello.js</span>
-          </div>
+          <div class="cc-tabs"><span class="cc-tab active">closures.js</span></div>
           <div class="cc-dots"><span></span><span></span><span></span></div>
         </div>
         <pre class="cc-body" id="cc-body"></pre>
-        <div class="cc-arrow">compiles to →</div>
+        <div class="cc-foot" id="cc-foot">→ running…</div>
       </div>
     </div>
   </section>
@@ -269,22 +195,22 @@
         <div class="stage">
           <div class="stage-no">01</div>
           <h3>Lexer</h3>
-          <p>Scans raw <code>.ayu</code> text into a flat stream of tokens, tracking line and column for every one.</p>
+          <p>Scans raw JavaScript text into a token stream — keywords, identifiers, numbers, strings, template literals — tracking line/column for every one.</p>
         </div>
         <div class="stage">
           <div class="stage-no">02</div>
           <h3>Parser</h3>
-          <p>A recursive-descent parser turns the token stream into an Abstract Syntax Tree, enforcing grammar and operator precedence.</p>
+          <p>A recursive-descent parser builds an Abstract Syntax Tree, resolving operator precedence, arrow functions, and assignment targets.</p>
         </div>
         <div class="stage">
           <div class="stage-no">03</div>
           <h3>AST</h3>
-          <p>The validated tree is walked once to check structure before anything is emitted.</p>
+          <p>The tree is walked to validate structure — scoping, const-reassignment, and reference errors are caught before evaluation.</p>
         </div>
         <div class="stage">
           <div class="stage-no">04</div>
-          <h3>Code Generator</h3>
-          <p>Emits readable ES6 — same control flow, same names — ready for the Node.js runtime.</p>
+          <h3>Evaluator</h3>
+          <p>Executes the AST directly with real lexical scoping and closures — no code generation, no <code>eval</code>.</p>
         </div>
       </div>
     </div>
@@ -293,8 +219,8 @@
   <section id="features">
     <div class="wrap">
       <div class="section-head">
-        <h2>What the language supports</h2>
-        <p>Everything a small imperative language needs: variables, control flow, functions and arrays, with real syntax errors instead of silent failures.</p>
+        <h2>What it can run</h2>
+        <p>A meaningful subset of real JavaScript — enough to write recursive functions, closures, and array pipelines.</p>
       </div>
       <div class="feat-grid" id="feat-grid"></div>
     </div>
@@ -303,12 +229,12 @@
   <section id="builtins">
     <div class="wrap">
       <div class="section-head">
-        <h2>Built-in functions</h2>
-        <p>A small standard library, callable from any <code>.ayu</code> program.</p>
+        <h2>Supported globals &amp; methods</h2>
+        <p>Values in AyuCompiler <em>are</em> real JavaScript values under the hood, so native array/string/Math methods work out of the box.</p>
       </div>
       <div class="builtin-wrap">
         <table>
-          <thead><tr><th>Function</th><th>Does</th></tr></thead>
+          <thead><tr><th>Name</th><th>Notes</th></tr></thead>
           <tbody id="builtin-body"></tbody>
         </table>
       </div>
@@ -319,7 +245,7 @@
     <div class="wrap">
       <div class="section-head">
         <h2>Automated test suite</h2>
-        <p>Every language feature has a matching <code>.ayu</code> test file, run on every change.</p>
+        <p>Each language feature has a matching test script, run on every change.</p>
       </div>
       <div class="tests" id="test-list"></div>
     </div>
@@ -329,29 +255,29 @@
     <div class="wrap">
       <div class="section-head">
         <h2>Playground</h2>
-        <p>Pick an example or write your own <code>.ayu</code> code, then run it — right here, in your browser.</p>
-        <div class="not-js-note">
-          <strong>Heads up — <code>.ayu</code> is not JavaScript.</strong>
-          It looks similar but a few keywords differ. Quick swap-list:
-          <div class="not-js-table">
-            <div><span class="njs-js">const / let x = …</span><span class="njs-arrow">→</span><span class="njs-ayu">let x = …</span></div>
-            <div><span class="njs-js">for (const x of list) { }</span><span class="njs-arrow">→</span><span class="njs-ayu">for x in list { }</span></div>
-            <div><span class="njs-js">console.log(x)</span><span class="njs-arrow">→</span><span class="njs-ayu">print x;</span></div>
-            <div><span class="njs-js">function f(a) { }</span><span class="njs-arrow">→</span><span class="njs-ayu">fn f(a) { }</span></div>
+        <p>Pick an example or write your own JavaScript, then run it — interpreted live, right here in your browser.</p>
+        <div class="subset-note">
+          <strong>This is a subset of JavaScript — not the full spec.</strong>
+          <div class="subset-grid">
+            <span class="yes">var / let / const, functions, arrow functions</span>
+            <span class="yes">if/else, while, for, for-of, break/continue</span>
+            <span class="yes">arrays, objects, template literals, ternary</span>
+            <span class="yes">closures, recursion, native array/string methods</span>
+            <span class="no">classes, async/await, Promises</span>
+            <span class="no">destructuring, spread/rest, try/catch, switch</span>
           </div>
-          See the <a href="#features">Features</a> section above for the full syntax.
         </div>
       </div>
 
       <div class="pg-grid">
         <div class="pg-pane">
           <div class="pg-bar">
-            <span class="pg-label">source.ayu</span>
+            <span class="pg-label">script.js</span>
             <select id="example-select"></select>
           </div>
           <textarea id="code-input" spellcheck="false"></textarea>
           <div class="pg-footer">
-            <span class="hint">Uses <code>input()</code> / <code>inputNumber()</code>? Your browser will prompt for values.</span>
+            <span class="hint">Output is captured from <code>console.log</code>.</span>
             <button class="btn btn-primary" id="run-btn">Run ▸</button>
           </div>
         </div>
@@ -360,7 +286,7 @@
             <span class="pg-label">Result</span>
             <div class="out-tabs">
               <span class="out-tab active" data-tab="output">Output</span>
-              <span class="out-tab" data-tab="js">Generated JS</span>
+              <span class="out-tab" data-tab="ast">AST</span>
             </div>
           </div>
           <pre class="out-body" id="out-body"></pre>
@@ -379,363 +305,399 @@
 
 <script>
 /* =========================================================
-   AyuCompiler engine: Lexer -> Parser -> AST -> JS CodeGen
+   A small JavaScript interpreter, written in JavaScript.
+   Lexer -> Parser -> AST -> Tree-walking Evaluator.
    ========================================================= */
-class AyuError extends Error {
-  constructor(kind, message, line, col) {
-    super(`Line ${line}, Column ${col} (${kind}): ${message}`);
-    this.kind = kind; this.line = line; this.col = col;
-  }
+class JSError extends Error {
+  constructor(kind, message, line, col) { super(`Line ${line}, Column ${col} (${kind}): ${message}`); this.kind = kind; this.line = line; this.col = col; }
 }
-const KEYWORDS = new Set(["let","fn","return","if","else","while","for","in","break","continue","print","true","false"]);
+const KEYWORDS = new Set(["var","let","const","function","return","if","else","while","for","break","continue","true","false","null","undefined","typeof","of","in","new"]);
 
-function ayuLex(src) {
-  const tokens = [];
-  let i = 0, line = 1, col = 1;
-  const peek = () => src[i];
+function jsLex(src) {
+  const tokens = []; let i = 0, line = 1, col = 1;
+  const peek = (o = 0) => src[i + o];
   const advance = () => { const c = src[i++]; if (c === "\n") { line++; col = 1; } else col++; return c; };
   while (i < src.length) {
     const c = peek();
     if (c === " " || c === "\t" || c === "\r" || c === "\n") { advance(); continue; }
-    if (c === "/" && src[i+1] === "/") { while (i < src.length && peek() !== "\n") advance(); continue; }
-    const startLine = line, startCol = col;
-    if (/[0-9]/.test(c)) {
-      let s = ""; while (i < src.length && /[0-9.]/.test(peek())) s += advance();
-      tokens.push({ type: "NUMBER", value: parseFloat(s), line: startLine, col: startCol }); continue;
+    if (c === "/" && peek(1) === "/") { while (i < src.length && peek() !== "\n") advance(); continue; }
+    if (c === "/" && peek(1) === "*") { advance(); advance(); while (i < src.length && !(peek() === "*" && peek(1) === "/")) advance(); advance(); advance(); continue; }
+    const sLine = line, sCol = col;
+    if (/[0-9]/.test(c)) { let s = ""; while (i < src.length && /[0-9.]/.test(peek())) s += advance(); tokens.push({ type: "NUMBER", value: parseFloat(s), line: sLine, col: sCol }); continue; }
+    if (c === '"' || c === "'") {
+      const quote = advance(); let s = "";
+      while (i < src.length && peek() !== quote) { if (peek() === "\\") { advance(); s += advance(); continue; } if (peek() === "\n") throw new JSError("LexError", "Unterminated string", sLine, sCol); s += advance(); }
+      if (i >= src.length) throw new JSError("LexError", "Unterminated string", sLine, sCol);
+      advance(); tokens.push({ type: "STRING", value: s, line: sLine, col: sCol }); continue;
     }
-    if (c === '"') {
-      advance(); let s = "";
-      while (i < src.length && peek() !== '"') {
-        if (peek() === "\n") throw new AyuError("LexError", "Unterminated string", startLine, startCol);
-        s += advance();
+    if (c === "`") {
+      advance(); const parts = []; let text = "";
+      while (i < src.length && peek() !== "`") {
+        if (peek() === "\\") { advance(); text += advance(); continue; }
+        if (peek() === "$" && peek(1) === "{") {
+          parts.push({ text }); text = ""; advance(); advance();
+          let depth = 1, exprSrc = "";
+          while (i < src.length && depth > 0) { if (peek() === "{") depth++; if (peek() === "}") { depth--; if (depth === 0) { advance(); break; } } exprSrc += advance(); }
+          parts.push({ expr: exprSrc }); continue;
+        }
+        text += advance();
       }
-      if (i >= src.length) throw new AyuError("LexError", "Unterminated string", startLine, startCol);
-      advance();
-      tokens.push({ type: "STRING", value: s, line: startLine, col: startCol }); continue;
+      parts.push({ text });
+      if (i >= src.length) throw new JSError("LexError", "Unterminated template literal", sLine, sCol);
+      advance(); tokens.push({ type: "TEMPLATE", value: parts, line: sLine, col: sCol }); continue;
     }
-    if (/[A-Za-z_]/.test(c)) {
-      let s = ""; while (i < src.length && /[A-Za-z0-9_]/.test(peek())) s += advance();
-      tokens.push({ type: KEYWORDS.has(s) ? s.toUpperCase() : "IDENT", value: s, line: startLine, col: startCol }); continue;
-    }
+    if (/[A-Za-z_$]/.test(c)) { let s = ""; while (i < src.length && /[A-Za-z0-9_$]/.test(peek())) s += advance(); tokens.push({ type: KEYWORDS.has(s) ? s.toUpperCase() : "IDENT", value: s, line: sLine, col: sCol }); continue; }
+    const three = src.substr(i, 3);
+    if (["===", "!==", "**="].includes(three)) { advance(); advance(); advance(); tokens.push({ type: three, value: three, line: sLine, col: sCol }); continue; }
     const two = src.substr(i, 2);
-    if (["==","!=","<=",">=","&&","||"].includes(two)) {
-      advance(); advance();
-      tokens.push({ type: two, value: two, line: startLine, col: startCol }); continue;
-    }
-    if ("+-*/%=<>!(){}[],;".includes(c)) {
-      advance();
-      tokens.push({ type: c, value: c, line: startLine, col: startCol }); continue;
-    }
-    throw new AyuError("LexError", `Unexpected character '${c}'`, startLine, startCol);
+    if (["==","!=","<=",">=","&&","||","=>","++","--","+=","-=","*=","/=","**"].includes(two)) { advance(); advance(); tokens.push({ type: two, value: two, line: sLine, col: sCol }); continue; }
+    if ("+-*/%=<>!(){}[],;.:?".includes(c)) { advance(); tokens.push({ type: c, value: c, line: sLine, col: sCol }); continue; }
+    throw new JSError("LexError", `Unexpected character '${c}'`, sLine, sCol);
   }
   tokens.push({ type: "EOF", value: null, line, col });
   return tokens;
 }
 
-function ayuParse(tokens) {
+function jsParse(tokens) {
   let p = 0;
   const cur = () => tokens[p];
-  const at = (type) => cur().type === type;
+  const at = (t) => cur().type === t;
+  const atAny = (...ts) => ts.includes(cur().type);
   const advance = () => tokens[p++];
-  const expect = (type, what) => {
-    if (!at(type)) throw new AyuError("ParserError", `Expected ${what || type} but found '${cur().value ?? cur().type}'`, cur().line, cur().col);
-    return advance();
-  };
+  const expect = (t, what) => { if (!at(t)) throw new JSError("ParserError", `Expected ${what || t} but found '${cur().value ?? cur().type}'`, cur().line, cur().col); return advance(); };
   function program() { const body = []; while (!at("EOF")) body.push(statement()); return { type: "Program", body }; }
-  function block() {
-    expect("{", "'{'"); const body = [];
-    while (!at("}") && !at("EOF")) body.push(statement());
-    expect("}", "'}'"); return { type: "Block", body };
-  }
+  function block() { expect("{", "'{'"); const body = []; while (!at("}") && !at("EOF")) body.push(statement()); expect("}", "'}'"); return { type: "BlockStatement", body }; }
   function statement() {
-    if (at("LET")) return varDecl();
-    if (at("FN")) return fnDecl();
+    if (atAny("VAR", "LET", "CONST")) return varDecl();
+    if (at("FUNCTION")) return fnDecl();
     if (at("IF")) return ifStmt();
     if (at("WHILE")) return whileStmt();
-    if (at("FOR")) return forInStmt();
-    if (at("RETURN")) return returnStmt();
-    if (at("BREAK")) { advance(); expect(";", "';'"); return { type: "BreakStmt" }; }
-    if (at("CONTINUE")) { advance(); expect(";", "';'"); return { type: "ContinueStmt" }; }
-    if (at("PRINT")) return printStmt();
+    if (at("FOR")) return forStmt();
+    if (at("RETURN")) { advance(); let arg = null; if (!at(";") && !at("}")) arg = expr(); consumeSemi(); return { type: "ReturnStatement", arg }; }
+    if (at("BREAK")) { advance(); consumeSemi(); return { type: "BreakStatement" }; }
+    if (at("CONTINUE")) { advance(); consumeSemi(); return { type: "ContinueStatement" }; }
     if (at("{")) return block();
-    return exprStmt();
+    if (at(";")) { advance(); return { type: "EmptyStatement" }; }
+    const e = expr(); consumeSemi(); return { type: "ExpressionStatement", expr: e };
   }
-  function varDecl() {
-    advance(); const name = expect("IDENT", "identifier").value;
-    expect("=", "'='"); const init = expr(); expect(";", "';'");
-    return { type: "VarDecl", name, init };
-  }
-  function fnDecl() {
-    advance(); const name = expect("IDENT", "identifier").value;
-    expect("(", "'('"); const params = [];
-    if (!at(")")) { params.push(expect("IDENT", "identifier").value); while (at(",")) { advance(); params.push(expect("IDENT", "identifier").value); } }
-    expect(")", "')'"); const body = block();
-    return { type: "FnDecl", name, params, body };
-  }
-  function ifStmt() {
-    advance(); expect("(", "'('"); const test = expr(); expect(")", "')'");
-    const consequent = block(); let alternate = null;
-    if (at("ELSE")) { advance(); alternate = at("IF") ? ifStmt() : block(); }
-    return { type: "IfStmt", test, consequent, alternate };
-  }
-  function whileStmt() {
-    advance(); expect("(", "'('"); const test = expr(); expect(")", "')'");
-    const body = block(); return { type: "WhileStmt", test, body };
-  }
-  function forInStmt() {
-    advance(); const varName = expect("IDENT", "identifier").value;
-    expect("IN", "'in'"); const iterable = expr(); const body = block();
-    return { type: "ForInStmt", varName, iterable, body };
-  }
-  function returnStmt() {
-    advance(); let arg = null; if (!at(";")) arg = expr(); expect(";", "';'");
-    return { type: "ReturnStmt", arg };
-  }
-  function printStmt() { advance(); const arg = expr(); expect(";", "';'"); return { type: "PrintStmt", arg }; }
-  function exprStmt() {
-    if (at("IDENT")) {
-      const save = p; const name = advance().value; let target = { type: "Identifier", name };
-      if (at("[")) { advance(); const index = expr(); expect("]", "']'"); target = { type: "IndexExpr", object: target, index }; }
-      if (at("=")) { advance(); const value = expr(); expect(";", "';'"); return { type: "AssignStmt", target, value }; }
+  function consumeSemi() { if (at(";")) advance(); }
+  function varDecl() { const kind = advance().value; const decls = [oneDeclarator()]; while (at(",")) { advance(); decls.push(oneDeclarator()); } consumeSemi(); return { type: "VariableDeclaration", kind, decls }; }
+  function oneDeclarator() { const name = expect("IDENT", "identifier").value; let init = null; if (at("=")) { advance(); init = assignExpr(); } return { name, init }; }
+  function fnDecl() { advance(); const name = expect("IDENT", "identifier").value; const params = paramList(); const body = block(); return { type: "FunctionDeclaration", name, params, body }; }
+  function paramList() { expect("(", "'('"); const params = []; if (!at(")")) { params.push(expect("IDENT", "identifier").value); while (at(",")) { advance(); params.push(expect("IDENT", "identifier").value); } } expect(")", "')'"); return params; }
+  function ifStmt() { advance(); expect("(", "'('"); const test = expr(); expect(")", "')'"); const consequent = statement(); let alternate = null; if (at("ELSE")) { advance(); alternate = at("IF") ? ifStmt() : statement(); } return { type: "IfStatement", test, consequent, alternate }; }
+  function whileStmt() { advance(); expect("(", "'('"); const test = expr(); expect(")", "')'"); const body = statement(); return { type: "WhileStatement", test, body }; }
+  function forStmt() {
+    advance(); expect("(", "'('");
+    if (atAny("LET", "CONST", "VAR") && tokens[p + 1] && tokens[p + 1].type === "IDENT") {
+      const save = p; const kind = advance().value; const name = expect("IDENT", "identifier").value;
+      if (at("OF")) { advance(); const iterable = expr(); expect(")", "')'"); const body = statement(); return { type: "ForOfStatement", kind, name, iterable, body }; }
       p = save;
     }
-    const e = expr(); expect(";", "';'"); return { type: "ExprStmt", expr: e };
+    let init = null;
+    if (!at(";")) { if (atAny("LET", "CONST", "VAR")) init = varDecl(); else { init = { type: "ExpressionStatement", expr: expr() }; expect(";", "';'"); } } else advance();
+    let test = null; if (!at(";")) test = expr(); expect(";", "';'");
+    let update = null; if (!at(")")) update = expr(); expect(")", "')'");
+    const body = statement();
+    return { type: "ForStatement", init, test, update, body };
   }
-  function expr() { return logicalOr(); }
-  function logicalOr() { let left = logicalAnd(); while (at("||")) { advance(); left = { type: "Logical", op: "||", left, right: logicalAnd() }; } return left; }
-  function logicalAnd() { let left = equality(); while (at("&&")) { advance(); left = { type: "Logical", op: "&&", left, right: equality() }; } return left; }
-  function equality() { let left = relational(); while (at("==") || at("!=")) { const op = advance().type; left = { type: "Binary", op, left, right: relational() }; } return left; }
-  function relational() { let left = additive(); while (["<",">","<=",">="].includes(cur().type)) { const op = advance().type; left = { type: "Binary", op, left, right: additive() }; } return left; }
-  function additive() { let left = multiplicative(); while (at("+") || at("-")) { const op = advance().type; left = { type: "Binary", op, left, right: multiplicative() }; } return left; }
-  function multiplicative() { let left = unary(); while (at("*") || at("/") || at("%")) { const op = advance().type; left = { type: "Binary", op, left, right: unary() }; } return left; }
-  function unary() { if (at("!") || at("-")) { const op = advance().type; return { type: "Unary", op, arg: unary() }; } return postfix(); }
-  function postfix() {
-    let e = primary();
+  function expr() { return sequence(); }
+  function sequence() { let e = assignExpr(); while (at(",")) { advance(); e = assignExpr(); } return e; }
+  const COMPOUND = new Set(["+=", "-=", "*=", "/=", "**="]);
+  function assignExpr() { const left = conditional(); if (at("=") || COMPOUND.has(cur().type)) { const op = advance().type; const right = assignExpr(); return { type: "Assign", op, target: left, value: right }; } return left; }
+  function conditional() { const test = logicalOr(); if (at("?")) { advance(); const cons = assignExpr(); expect(":", "':'"); const alt = assignExpr(); return { type: "Conditional", test, cons, alt }; } return test; }
+  function logicalOr() { let l = logicalAnd(); while (at("||")) { advance(); l = { type: "Logical", op: "||", left: l, right: logicalAnd() }; } return l; }
+  function logicalAnd() { let l = equality(); while (at("&&")) { advance(); l = { type: "Logical", op: "&&", left: l, right: equality() }; } return l; }
+  function equality() { let l = relational(); while (atAny("==","!=","===","!==")) { const op = advance().type; l = { type: "Binary", op, left: l, right: relational() }; } return l; }
+  function relational() { let l = additive(); while (atAny("<",">","<=",">=")) { const op = advance().type; l = { type: "Binary", op, left: l, right: additive() }; } return l; }
+  function additive() { let l = multiplicative(); while (atAny("+","-")) { const op = advance().type; l = { type: "Binary", op, left: l, right: multiplicative() }; } return l; }
+  function multiplicative() { let l = exponent(); while (atAny("*","/","%")) { const op = advance().type; l = { type: "Binary", op, left: l, right: exponent() }; } return l; }
+  function exponent() { let l = unary(); if (at("**")) { advance(); return { type: "Binary", op: "**", left: l, right: exponent() }; } return l; }
+  function unary() {
+    if (atAny("!","-","+","TYPEOF")) { const op = advance().type; return { type: "Unary", op, arg: unary() }; }
+    if (atAny("++","--")) { const op = advance().type; const arg = unary(); return { type: "Update", op, arg, prefix: true }; }
+    return postfixUpdate();
+  }
+  function postfixUpdate() { let e = callMember(); if (atAny("++","--")) { const op = advance().type; e = { type: "Update", op, arg: e, prefix: false }; } return e; }
+  function callMember() {
+    let e = maybeArrow();
     for (;;) {
-      if (at("(")) { advance(); const args = []; if (!at(")")) { args.push(expr()); while (at(",")) { advance(); args.push(expr()); } } expect(")", "')'"); e = { type: "Call", callee: e, args }; }
-      else if (at("[")) { advance(); const index = expr(); expect("]", "']'"); e = { type: "IndexExpr", object: e, index }; }
+      if (at(".")) { advance(); const name = expect("IDENT", "identifier").value; e = { type: "Member", object: e, computed: false, property: { type: "Identifier", name } }; }
+      else if (at("[")) { advance(); const prop = expr(); expect("]", "']'"); e = { type: "Member", object: e, computed: true, property: prop }; }
+      else if (at("(")) { advance(); const args = []; if (!at(")")) { args.push(assignExpr()); while (at(",")) { advance(); args.push(assignExpr()); } } expect(")", "')'"); e = { type: "Call", callee: e, args }; }
       else break;
     }
     return e;
   }
+  function maybeArrow() {
+    if (at("IDENT") && tokens[p + 1] && tokens[p + 1].type === "=>") { const name = advance().value; advance(); return arrowBody([name]); }
+    if (at("(")) {
+      const save = p;
+      try { const params = paramList(); if (at("=>")) { advance(); return arrowBody(params); } } catch (e) {}
+      p = save;
+    }
+    return primary();
+  }
+  function arrowBody(params) { if (at("{")) { const body = block(); return { type: "Arrow", params, body, exprBody: false }; } const body = assignExpr(); return { type: "Arrow", params, body, exprBody: true }; }
   function primary() {
     const t = cur();
     if (at("NUMBER")) { advance(); return { type: "NumberLit", value: t.value }; }
     if (at("STRING")) { advance(); return { type: "StringLit", value: t.value }; }
+    if (at("TEMPLATE")) { advance(); const parts = t.value.map(part => part.text !== undefined ? { text: part.text } : { exprAst: jsParse(jsLex(part.expr)) }); return { type: "TemplateLit", parts }; }
     if (at("TRUE")) { advance(); return { type: "BoolLit", value: true }; }
     if (at("FALSE")) { advance(); return { type: "BoolLit", value: false }; }
+    if (at("NULL")) { advance(); return { type: "NullLit" }; }
+    if (at("UNDEFINED")) { advance(); return { type: "UndefinedLit" }; }
+    if (at("FUNCTION")) { advance(); let name = null; if (at("IDENT")) name = advance().value; const params = paramList(); const body = block(); return { type: "FunctionExpr", name, params, body }; }
     if (at("IDENT")) { advance(); return { type: "Identifier", name: t.value }; }
     if (at("(")) { advance(); const e = expr(); expect(")", "')'"); return e; }
-    if (at("[")) {
-      advance(); const items = [];
-      if (!at("]")) { items.push(expr()); while (at(",")) { advance(); items.push(expr()); } }
-      expect("]", "']'"); return { type: "ArrayLit", items };
-    }
-    throw new AyuError("ParserError", `Unexpected token '${t.value ?? t.type}'`, t.line, t.col);
+    if (at("[")) { advance(); const items = []; if (!at("]")) { items.push(assignExpr()); while (at(",")) { advance(); if (at("]")) break; items.push(assignExpr()); } } expect("]", "']'"); return { type: "ArrayLit", items }; }
+    if (at("{")) { advance(); const props = []; if (!at("}")) { props.push(objProp()); while (at(",")) { advance(); if (at("}")) break; props.push(objProp()); } } expect("}", "'}'"); return { type: "ObjectLit", props }; }
+    throw new JSError("ParserError", `Unexpected token '${t.value ?? t.type}'`, t.line, t.col);
   }
+  function objProp() { let key; if (at("STRING")) key = advance().value; else key = expect("IDENT", "identifier / key").value; expect(":", "':'"); const value = assignExpr(); return { key, value }; }
   return program();
 }
 
-const JS_OP = { "==":"===", "!=":"!==" };
-function ayuGenerate(ast) {
-  let out = "";
-  const w = (s) => { out += s; };
-  function genBlock(node, indent) { w("{\n"); for (const s of node.body) genStmt(s, indent + "  "); w(indent + "}"); }
-  function genStmt(node, indent) {
-    switch (node.type) {
-      case "VarDecl": w(`${indent}let ${node.name} = ${genExpr(node.init)};\n`); break;
-      case "AssignStmt": w(`${indent}${genExpr(node.target)} = ${genExpr(node.value)};\n`); break;
-      case "FnDecl": w(`${indent}function ${node.name}(${node.params.join(", ")}) `); genBlock(node.body, indent); w("\n"); break;
-      case "IfStmt":
-        w(`${indent}if (${genExpr(node.test)}) `); genBlock(node.consequent, indent);
-        if (node.alternate) {
-          w(" else ");
-          if (node.alternate.type === "IfStmt") {
-            const savedOut = out; out = "";
-            genStmt(node.alternate, indent);
-            const nested = out.replace(new RegExp("^" + indent), "");
-            out = savedOut + nested.replace(/\n$/, "");
-          } else { genBlock(node.alternate, indent); }
-        }
-        w("\n"); break;
-      case "WhileStmt": w(`${indent}while (${genExpr(node.test)}) `); genBlock(node.body, indent); w("\n"); break;
-      case "ForInStmt": w(`${indent}for (const ${node.varName} of ${genExpr(node.iterable)}) `); genBlock(node.body, indent); w("\n"); break;
-      case "ReturnStmt": w(`${indent}return${node.arg ? " " + genExpr(node.arg) : ""};\n`); break;
-      case "BreakStmt": w(`${indent}break;\n`); break;
-      case "ContinueStmt": w(`${indent}continue;\n`); break;
-      case "PrintStmt": w(`${indent}print(${genExpr(node.arg)});\n`); break;
-      case "Block": genBlock(node, indent); w("\n"); break;
-      case "ExprStmt": w(`${indent}${genExpr(node.expr)};\n`); break;
-      default: throw new Error("Unknown stmt " + node.type);
-    }
-  }
-  function genExpr(node) {
-    switch (node.type) {
-      case "NumberLit": return String(node.value);
-      case "StringLit": return JSON.stringify(node.value);
-      case "BoolLit": return String(node.value);
-      case "Identifier": return node.name;
-      case "ArrayLit": return `[${node.items.map(genExpr).join(", ")}]`;
-      case "IndexExpr": return `${genExpr(node.object)}[${genExpr(node.index)}]`;
-      case "Unary": return `${node.op}${genExpr(node.arg)}`;
-      case "Binary": return `(${genExpr(node.left)} ${JS_OP[node.op] || node.op} ${genExpr(node.right)})`;
-      case "Logical": return `(${genExpr(node.left)} ${node.op} ${genExpr(node.right)})`;
-      case "Call": {
-        const calleeName = node.callee.type === "Identifier" ? node.callee.name : null;
-        const args = node.args.map(genExpr).join(", ");
-        return `${calleeName || genExpr(node.callee)}(${args})`;
-      }
-      default: throw new Error("Unknown expr " + node.type);
-    }
-  }
-  for (const s of ast.body) genStmt(s, "");
-  return out;
+class Environment {
+  constructor(parent = null) { this.vars = new Map(); this.consts = new Set(); this.parent = parent; }
+  define(name, value, isConst = false) { this.vars.set(name, value); if (isConst) this.consts.add(name); }
+  get(name) { if (this.vars.has(name)) return this.vars.get(name); if (this.parent) return this.parent.get(name); throw new JSError("ReferenceError", `${name} is not defined`, 0, 0); }
+  set(name, value) { if (this.vars.has(name)) { if (this.consts.has(name)) throw new JSError("TypeError", `Assignment to constant variable '${name}'`, 0, 0); this.vars.set(name, value); return; } if (this.parent) return this.parent.set(name, value); throw new JSError("ReferenceError", `${name} is not defined`, 0, 0); }
 }
-function ayuCompile(src) { return ayuGenerate(ayuParse(ayuLex(src))); }
+class ReturnSignal { constructor(value) { this.value = value; } }
+class BreakSignal {}
+class ContinueSignal {}
+class UserFunction { constructor(name, params, body, closureEnv, exprBody = false) { this.name = name; this.params = params; this.body = body; this.closureEnv = closureEnv; this.exprBody = exprBody; } }
 
-function ayuRun(src) {
-  const output = [];
-  const AYU = {
-    length: (c) => c.length,
-    contains: (c, v) => c.includes(v),
-    indexOf: (c, v) => c.indexOf(v),
-    push: (a, v) => { a.push(v); return a; },
-    pop: (a) => a.pop(),
-    upper: (s) => String(s).toUpperCase(),
-    lower: (s) => String(s).toLowerCase(),
-    input: (prompt) => { const v = window.prompt(prompt ?? "") ?? ""; output.push(String(prompt ?? "") + v); return v; },
-    inputNumber: (prompt) => { const v = Number(window.prompt(prompt ?? "") ?? "0"); output.push(String(prompt ?? "") + v); return v; },
-  };
-  const print = (v) => output.push(Array.isArray(v) ? JSON.stringify(v) : String(v));
-  const js = ayuCompile(src);
-  const fn = new Function("AYU", "print", `
-    const { length, contains, indexOf, push, pop, upper, lower, input, inputNumber } = AYU;
-    ${js}
-  `);
-  fn(AYU, print);
-  return { js, output };
+function jsStringify(v) {
+  if (v === undefined) return "undefined";
+  if (v === null) return "null";
+  if (v instanceof UserFunction) return `[Function: ${v.name || "anonymous"}]`;
+  if (Array.isArray(v)) return "[" + v.map(x => typeof x === "string" ? JSON.stringify(x) : jsStringify(x)).join(", ") + "]";
+  if (typeof v === "object") { try { return JSON.stringify(v); } catch { return "[object Object]"; } }
+  return String(v);
+}
+
+function jsRun(source, { onLog } = {}) {
+  const log = onLog || (() => {});
+  const globalEnv = new Environment();
+  globalEnv.define("console", { log: (...args) => log(args.map(jsStringify).join(" ")) }, true);
+  globalEnv.define("Math", Math, true);
+
+  function callFunction(fn, args) {
+    if (typeof fn === "function") return fn(...args);
+    if (!(fn instanceof UserFunction)) throw new JSError("TypeError", `${jsStringify(fn)} is not a function`, 0, 0);
+    const env = new Environment(fn.closureEnv);
+    fn.params.forEach((name, i) => env.define(name, args[i]));
+    env.define("arguments", args);
+    if (fn.exprBody) return evalExpr(fn.body, env);
+    try { execBlock(fn.body, env); } catch (sig) { if (sig instanceof ReturnSignal) return sig.value; throw sig; }
+    return undefined;
+  }
+  function execProgram(node) {
+    for (const s of node.body) if (s.type === "FunctionDeclaration") globalEnv.define(s.name, new UserFunction(s.name, s.params, s.body, globalEnv));
+    for (const s of node.body) if (s.type !== "FunctionDeclaration") execStmt(s, globalEnv);
+  }
+  function execBlock(block, env) {
+    const scope = new Environment(env);
+    for (const s of block.body) if (s.type === "FunctionDeclaration") scope.define(s.name, new UserFunction(s.name, s.params, s.body, scope));
+    for (const s of block.body) if (s.type !== "FunctionDeclaration") execStmt(s, scope);
+  }
+  function execStmt(node, env) {
+    switch (node.type) {
+      case "VariableDeclaration": for (const d of node.decls) env.define(d.name, d.init ? evalExpr(d.init, env) : undefined, node.kind === "const"); return;
+      case "FunctionDeclaration": return;
+      case "ExpressionStatement": evalExpr(node.expr, env); return;
+      case "IfStatement": if (Boolean(evalExpr(node.test, env))) execStmt(node.consequent, env); else if (node.alternate) execStmt(node.alternate, env); return;
+      case "WhileStatement": while (Boolean(evalExpr(node.test, env))) { try { execStmt(node.body, env); } catch (sig) { if (sig instanceof BreakSignal) break; if (sig instanceof ContinueSignal) continue; throw sig; } } return;
+      case "ForStatement": {
+        const scope = new Environment(env);
+        if (node.init) { if (node.init.type === "VariableDeclaration") execStmt(node.init, scope); else evalExpr(node.init.expr, scope); }
+        while (node.test ? Boolean(evalExpr(node.test, scope)) : true) {
+          try { execStmt(node.body, scope); } catch (sig) { if (sig instanceof BreakSignal) break; if (!(sig instanceof ContinueSignal)) throw sig; }
+          if (node.update) evalExpr(node.update, scope);
+        }
+        return;
+      }
+      case "ForOfStatement": {
+        const iterable = evalExpr(node.iterable, env);
+        const items = Array.isArray(iterable) ? iterable : (typeof iterable === "string" ? iterable.split("") : Object.values(iterable));
+        for (const item of items) {
+          const scope = new Environment(env);
+          scope.define(node.name, item, node.kind === "const");
+          try { execStmt(node.body, scope); } catch (sig) { if (sig instanceof BreakSignal) break; if (sig instanceof ContinueSignal) continue; throw sig; }
+        }
+        return;
+      }
+      case "BlockStatement": execBlock(node, env); return;
+      case "ReturnStatement": throw new ReturnSignal(node.arg ? evalExpr(node.arg, env) : undefined);
+      case "BreakStatement": throw new BreakSignal();
+      case "ContinueStatement": throw new ContinueSignal();
+      case "EmptyStatement": return;
+      default: throw new Error("Unknown statement: " + node.type);
+    }
+  }
+  function getRef(node, env) {
+    if (node.type === "Identifier") return { get: () => env.get(node.name), set: (v) => env.set(node.name, v) };
+    if (node.type === "Member") { const obj = evalExpr(node.object, env); const key = node.computed ? evalExpr(node.property, env) : node.property.name; return { get: () => obj[key], set: (v) => { obj[key] = v; } }; }
+    throw new JSError("SyntaxError", "Invalid assignment target", 0, 0);
+  }
+  function evalExprAstProgram(astProgram, env) { const stmt = astProgram.body[0]; if (stmt.type === "ExpressionStatement") return evalExpr(stmt.expr, env); return undefined; }
+  function evalExpr(node, env) {
+    switch (node.type) {
+      case "NumberLit": return node.value;
+      case "StringLit": return node.value;
+      case "BoolLit": return node.value;
+      case "NullLit": return null;
+      case "UndefinedLit": return undefined;
+      case "TemplateLit": return node.parts.map(part => part.text !== undefined ? part.text : jsStringify(evalExprAstProgram(part.exprAst, env))).join("");
+      case "Identifier": return env.get(node.name);
+      case "ArrayLit": return node.items.map(it => evalExpr(it, env));
+      case "ObjectLit": { const o = {}; for (const { key, value } of node.props) o[key] = evalExpr(value, env); return o; }
+      case "FunctionExpr": return new UserFunction(node.name, node.params, node.body, env);
+      case "Arrow": return new UserFunction(null, node.params, node.body, env, node.exprBody);
+      case "Member": {
+        const obj = evalExpr(node.object, env);
+        const key = node.computed ? evalExpr(node.property, env) : node.property.name;
+        if (obj === undefined || obj === null) throw new JSError("TypeError", `Cannot read properties of ${jsStringify(obj)} (reading '${key}')`, 0, 0);
+        const val = obj[key];
+        if (typeof val === "function") return val.bind(obj);
+        return val;
+      }
+      case "Call": {
+        const args = node.args.map(a => evalExpr(a, env));
+        const wrapped = args.map(a => a instanceof UserFunction ? ((...xs) => callFunction(a, xs)) : a);
+        if (node.callee.type === "Member") {
+          const obj = evalExpr(node.callee.object, env);
+          const key = node.callee.computed ? evalExpr(node.callee.property, env) : node.callee.property.name;
+          const fn = obj[key];
+          if (typeof fn === "function") return fn.apply(obj, wrapped);
+          return callFunction(fn, args);
+        }
+        const fn = evalExpr(node.callee, env);
+        if (typeof fn === "function") return fn(...wrapped);
+        return callFunction(fn, args);
+      }
+      case "Unary": {
+        if (node.op === "TYPEOF") { try { const v = evalExpr(node.arg, env); return v instanceof UserFunction ? "function" : typeof v; } catch { return "undefined"; } }
+        const v = evalExpr(node.arg, env);
+        if (node.op === "!") return !Boolean(v);
+        if (node.op === "-") return -v;
+        if (node.op === "+") return +v;
+        throw new Error("Unknown unary " + node.op);
+      }
+      case "Update": { const ref = getRef(node.arg, env); const old = ref.get(); const next = node.op === "++" ? old + 1 : old - 1; ref.set(next); return node.prefix ? next : old; }
+      case "Binary": {
+        const l = evalExpr(node.left, env), r = evalExpr(node.right, env);
+        switch (node.op) {
+          case "+": return l + r; case "-": return l - r; case "*": return l * r; case "/": return l / r; case "%": return l % r; case "**": return l ** r;
+          case "==": return l == r; case "!=": return l != r; case "===": return l === r; case "!==": return l !== r;
+          case "<": return l < r; case ">": return l > r; case "<=": return l <= r; case ">=": return l >= r;
+          default: throw new Error("Unknown binary op " + node.op);
+        }
+      }
+      case "Logical": { const l = evalExpr(node.left, env); if (node.op === "&&") return Boolean(l) ? evalExpr(node.right, env) : l; return Boolean(l) ? l : evalExpr(node.right, env); }
+      case "Conditional": return Boolean(evalExpr(node.test, env)) ? evalExpr(node.cons, env) : evalExpr(node.alt, env);
+      case "Assign": {
+        const ref = getRef(node.target, env);
+        let value;
+        if (node.op === "=") value = evalExpr(node.value, env);
+        else { const old = ref.get(); const rhs = evalExpr(node.value, env); value = { "+=": old + rhs, "-=": old - rhs, "*=": old * rhs, "/=": old / rhs, "**=": old ** rhs }[node.op]; }
+        ref.set(value);
+        return value;
+      }
+      default: throw new Error("Unknown expression: " + node.type);
+    }
+  }
+  const ast = jsParse(jsLex(source));
+  execProgram(ast);
+  return ast;
 }
 
 /* =========================================================
    Page content + wiring
    ========================================================= */
 const EXAMPLES = {
-  "hello.ayu": `let score = 95;\nprint "Score is:";\nprint score;`,
-  "functions.ayu": `fn add(a, b) {\n  return a + b;\n}\n\nlet total = (add(2, 3) + 4) * 2;\nprint total;`,
-  "nested_if.ayu": `let age = 20;\nif (age >= 18) {\n  if (age >= 65) {\n    print "Senior";\n  } else {\n    print "Adult";\n  }\n} else {\n  print "Minor";\n}`,
-  "loops.ayu": `let i = 0;\nwhile (i < 2) {\n  for item in [1, 2, 3] {\n    print item;\n  }\n  i = i + 1;\n}`,
-  "arrays.ayu": `let arr = [1, 2, 3];\npush(arr, 50);\nprint arr;\nprint contains(arr, 50);\nprint indexOf(arr, 2);\npop(arr);\nprint arr;\nprint length(arr);`,
-  "precedence.ayu": `let total = 10 + 5 * 2;\nprint total;`,
-  "error.ayu": `let x = ;`,
+  "closures.js": `function makeCounter() {\n  let count = 0;\n  return function() {\n    count++;\n    return count;\n  };\n}\n\nconst counter = makeCounter();\nconsole.log(counter());\nconsole.log(counter());\nconsole.log(counter());`,
+  "recursion.js": `function factorial(n) {\n  if (n <= 1) return 1;\n  return n * factorial(n - 1);\n}\n\nconsole.log(factorial(5));`,
+  "arrays.js": `const nums = [1, 2, 3, 4, 5];\nconsole.log(nums.filter(n => n % 2 === 0));\nconsole.log(nums.map(n => n * n));\nconsole.log(nums.reduce((a, b) => a + b, 0));`,
+  "loops.js": `const fruits = ["Apple", "Banana", "Mango"];\nfor (const fruit of fruits) {\n  console.log(fruit);\n}\nfor (let i = 0; i < 3; i++) {\n  console.log("i =", i);\n}`,
+  "objects-templates.js": `const person = { name: "Ayush", age: 20 };\nconsole.log(\`Hello, \${person.name}! You are \${person.age}.\`);\nperson.age++;\nconsole.log(person.age);`,
+  "ternary.js": `let score = 45;\nlet result = score >= 50 ? "Pass" : "Fail";\nconsole.log(result);\n\nlet total = 10;\ntotal += 5;\ntotal *= 2;\nconsole.log(total);`,
+  "error-example.js": `let x = ;`,
 };
 
 const FEATURES = [
-  { title: "Variables", code: `let score = 95;\nlet name = "Ayu";` },
-  { title: "Arithmetic & precedence", code: `let total = (a + b) * 2;\n// 10 + 5 * 2 → 20` },
-  { title: "Conditionals", code: `if (age >= 18) {\n  print "Adult";\n} else {\n  print "Minor";\n}` },
-  { title: "Loops & control", code: `for item in list {\n  if (item == 0) { continue; }\n  print item;\n}` },
-  { title: "Functions", code: `fn add(a, b) {\n  return a + b;\n}` },
-  { title: "Arrays", code: `push(arr, 50);\npop(arr);\nlength(arr);` },
-  { title: "Strings", code: `upper(str);\nlower(str);` },
-  { title: "Console I/O", code: `let x = inputNumber("Age: ");` },
-  { title: "Diagnostics", code: `// Line 4, Column 15\n// (ParserError)` },
+  { title: "Variables", code: `let score = 95;\nconst name = "Ayu";\nvar legacy = true;` },
+  { title: "Functions & closures", code: `function makeAdder(a) {\n  return b => a + b;\n}` },
+  { title: "Control flow", code: `if (age >= 18) {\n  console.log("Adult");\n} else {\n  console.log("Minor");\n}` },
+  { title: "Loops", code: `for (const x of list) {\n  if (x === 0) continue;\n  console.log(x);\n}` },
+  { title: "Arrays & methods", code: `nums.map(n => n * 2);\nnums.filter(n => n > 0);\nnums.push(10);` },
+  { title: "Objects", code: `const o = { name: "Ayu", age: 1 };\no.age++;\nconsole.log(o.name);` },
+  { title: "Template literals", code: `\`Hello, \${name}!\`` },
+  { title: "Ternary & compound ops", code: `let r = n > 0 ? "pos" : "neg";\ntotal += 5;` },
+  { title: "Errors with diagnostics", code: `// Line 4, Column 15\n// (ParserError)` },
 ];
 
 const BUILTINS = [
-  ["length(collection)", "Returns array element count or string length."],
-  ["contains(collection, value)", "True if the value exists in the collection."],
-  ["indexOf(collection, value)", "0-based index of a value, or -1."],
-  ["push(array, value)", "Appends a value to the end of an array."],
-  ["pop(array)", "Removes and returns the last element."],
-  ["upper(string) / lower(string)", "Converts text case."],
-  ["input(prompt) / inputNumber(prompt)", "Reads string or numeric input."],
+  ["console.log(...)", "Prints to the output panel."],
+  ["Math.*", "Full native Math object — Math.max, Math.floor, Math.random, etc."],
+  ["arr.push / pop / map / filter / forEach / reduce / includes / indexOf", "Native Array.prototype methods — work directly since arrays are real JS arrays."],
+  ["str.toUpperCase / toLowerCase / includes / length", "Native String.prototype methods."],
+  ["typeof x", "Returns the runtime type as a string."],
 ];
 
 const TESTS = [
-  "hello.ayu — variables, arithmetic, printing",
-  "functions.ayu — functions, parameters, return",
-  "nested_if.ayu — nested conditional blocks",
-  "nested_loops.ayu — nested for-in and while",
-  "arrays.ayu — indexing, push, pop, contains, indexOf",
-  "precedence.ayu — operator precedence",
-  "input.ayu — interactive prompt handling",
-  "error.ayu — syntax errors with line/column",
+  "basics.js — variables, arithmetic, printing",
+  "closures.js — nested closures & higher-order functions",
+  "recursion.js — recursive function calls",
+  "loops.js — while, classic for, for-of, break/continue",
+  "arrays.js — map, filter, reduce, push",
+  "objects-templates.js — property access, template literals",
+  "ternary.js — ternary & compound assignment operators",
+  "error-example.js — syntax errors with line/column",
 ];
 
 function esc(s){ return s.replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
-
-// token-based syntax highlighter (avoids corrupting already-inserted HTML)
-const HL_KEYWORDS = new Set(["let","fn","return","if","else","while","for","in","print","true","false","break","continue"]);
+const HL_KEYWORDS = new Set(["let","const","var","function","return","if","else","while","for","of","in","true","false","null","undefined","typeof","break","continue"]);
 function highlight(code) {
-  let out = "";
-  let i = 0;
-  const n = code.length;
+  let out = ""; let i = 0; const n = code.length;
   while (i < n) {
     const c = code[i];
-    // line comment
-    if (c === "/" && code[i+1] === "/") {
-      let j = i;
-      while (j < n && code[j] !== "\n") j++;
-      out += `<span class="c">${esc(code.slice(i, j))}</span>`;
-      i = j;
-      continue;
-    }
-    // string
-    if (c === '"') {
-      let j = i + 1;
-      while (j < n && code[j] !== '"') j++;
-      j = Math.min(j + 1, n);
-      out += `<span class="s">${esc(code.slice(i, j))}</span>`;
-      i = j;
-      continue;
-    }
-    // number
-    if (/[0-9]/.test(c)) {
-      let j = i;
-      while (j < n && /[0-9.]/.test(code[j])) j++;
-      out += `<span class="n">${esc(code.slice(i, j))}</span>`;
-      i = j;
-      continue;
-    }
-    // identifier / keyword / function-call name
-    if (/[A-Za-z_]/.test(c)) {
-      let j = i;
-      while (j < n && /[A-Za-z0-9_]/.test(code[j])) j++;
+    if (c === "/" && code[i+1] === "/") { let j = i; while (j < n && code[j] !== "\n") j++; out += `<span class="c">${esc(code.slice(i, j))}</span>`; i = j; continue; }
+    if (c === '"' || c === "'") { const q = c; let j = i + 1; while (j < n && code[j] !== q) j++; j = Math.min(j + 1, n); out += `<span class="s">${esc(code.slice(i, j))}</span>`; i = j; continue; }
+    if (c === "`") { let j = i + 1; while (j < n && code[j] !== "`") j++; j = Math.min(j + 1, n); out += `<span class="s">${esc(code.slice(i, j))}</span>`; i = j; continue; }
+    if (/[0-9]/.test(c)) { let j = i; while (j < n && /[0-9.]/.test(code[j])) j++; out += `<span class="n">${esc(code.slice(i, j))}</span>`; i = j; continue; }
+    if (/[A-Za-z_$]/.test(c)) {
+      let j = i; while (j < n && /[A-Za-z0-9_$]/.test(code[j])) j++;
       const word = code.slice(i, j);
       if (HL_KEYWORDS.has(word)) out += `<span class="k">${esc(word)}</span>`;
       else if (code[j] === "(") out += `<span class="f">${esc(word)}</span>`;
       else out += esc(word);
-      i = j;
-      continue;
+      i = j; continue;
     }
-    out += esc(c);
-    i++;
+    out += esc(c); i++;
   }
   return out;
 }
 
-// hero card cycling
-const heroAyu = EXAMPLES["hello.ayu"];
-let heroJs = "";
-try { heroJs = ayuCompile(heroAyu); } catch(e) { heroJs = "// compile error"; }
+// hero card: run the closures example and show real output
+const heroCode = EXAMPLES["closures.js"];
 const ccBody = document.getElementById("cc-body");
-const tabAyu = document.getElementById("cc-tab-ayu");
-const tabJs = document.getElementById("cc-tab-js");
-function showHero(which) {
-  if (which === "ayu") { ccBody.innerHTML = highlight(heroAyu); tabAyu.classList.add("active"); tabJs.classList.remove("active"); }
-  else { ccBody.innerHTML = highlight(heroJs); tabJs.classList.add("active"); tabAyu.classList.remove("active"); }
+const ccFoot = document.getElementById("cc-foot");
+ccBody.innerHTML = highlight(heroCode);
+try {
+  const heroLogs = [];
+  jsRun(heroCode, { onLog: s => heroLogs.push(s) });
+  ccFoot.textContent = "→ output: " + heroLogs.join(", ");
+} catch (e) {
+  ccFoot.textContent = "→ " + e.message;
 }
-showHero("ayu");
-let heroShowing = "ayu";
-setInterval(() => { heroShowing = heroShowing === "ayu" ? "js" : "ayu"; showHero(heroShowing); }, 3400);
 
 // features grid
-const featGrid = document.getElementById("feat-grid");
-featGrid.innerHTML = FEATURES.map(f => `
-  <div class="feat">
-    <h4>${f.title}</h4>
-    <code class="snip">${highlight(f.code)}</code>
-  </div>
+document.getElementById("feat-grid").innerHTML = FEATURES.map(f => `
+  <div class="feat"><h4>${f.title}</h4><code class="snip">${highlight(f.code)}</code></div>
 `).join("");
 
 // builtins table
@@ -755,18 +717,18 @@ const codeInput = document.getElementById("code-input");
 const outBody = document.getElementById("out-body");
 const runBtn = document.getElementById("run-btn");
 const outTabs = document.querySelectorAll(".out-tab");
-let lastResult = { output: [], js: "", isError: false };
+let lastResult = { output: [], ast: null, isError: false };
 let activeTab = "output";
 
 function loadExample(name) { codeInput.value = EXAMPLES[name]; }
-loadExample("hello.ayu");
+loadExample("closures.js");
 exampleSelect.addEventListener("change", () => loadExample(exampleSelect.value));
 
 function renderOutput() {
   const showError = activeTab === "output" && lastResult.isError;
   outBody.classList.toggle("error-line", showError);
-  if (activeTab === "js") {
-    outBody.textContent = lastResult.js || "// nothing compiled yet";
+  if (activeTab === "ast") {
+    outBody.textContent = lastResult.ast ? JSON.stringify(lastResult.ast, null, 2) : "// nothing parsed yet";
   } else {
     outBody.textContent = lastResult.output.length ? lastResult.output.join("\n") : "// run your program to see output here";
   }
@@ -780,10 +742,11 @@ outTabs.forEach(tab => tab.addEventListener("click", () => {
 
 function runCode() {
   try {
-    const { js, output } = ayuRun(codeInput.value);
-    lastResult = { js, output, isError: false };
+    const output = [];
+    const ast = jsRun(codeInput.value, { onLog: s => output.push(s) });
+    lastResult = { output, ast, isError: false };
   } catch (e) {
-    lastResult = { js: lastResult.js, output: [e.message || String(e)], isError: true };
+    lastResult = { output: [e.message || String(e)], ast: lastResult.ast, isError: true };
     outTabs.forEach(t => t.classList.remove("active"));
     document.querySelector('.out-tab[data-tab="output"]').classList.add("active");
     activeTab = "output";
