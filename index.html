@@ -157,6 +157,18 @@
 
   /* ---------- playground ---------- */
   #playground{background:#fff; border-top:1px solid var(--line); border-bottom:1px solid var(--line);}
+
+  .not-js-note{
+    margin-top:18px; padding:14px 16px; border:1px solid #E8D3A0; border-left:3px solid var(--amber);
+    background:#FBF4E3; border-radius:4px; font-size:13.5px; color:var(--ink); line-height:1.6; max-width:640px;
+  }
+  .not-js-note code{background:rgba(0,0,0,0.06); padding:1px 5px; border-radius:3px; font-size:12.5px;}
+  .not-js-note a{color:var(--blue-deep); text-decoration:underline;}
+  .not-js-table{margin:10px 0 8px; display:grid; gap:5px;}
+  .not-js-table > div{display:grid; grid-template-columns:1fr 20px 1fr; align-items:center; gap:8px; font-family:'JetBrains Mono',monospace; font-size:12px;}
+  .njs-js{color:#B23B3B; background:rgba(178,59,59,0.08); padding:3px 7px; border-radius:3px;}
+  .njs-ayu{color:var(--green); background:rgba(34,122,91,0.08); padding:3px 7px; border-radius:3px;}
+  .njs-arrow{color:var(--ink-soft); text-align:center;}
   .pg-grid{display:grid; grid-template-columns:1fr 1fr; gap:0; border:1px solid var(--line); border-radius:6px; overflow:hidden;}
   .pg-pane{display:flex; flex-direction:column; min-height:420px;}
   .pg-pane + .pg-pane{border-left:1px solid var(--line);}
@@ -318,6 +330,17 @@
       <div class="section-head">
         <h2>Playground</h2>
         <p>Pick an example or write your own <code>.ayu</code> code, then run it — right here, in your browser.</p>
+        <div class="not-js-note">
+          <strong>Heads up — <code>.ayu</code> is not JavaScript.</strong>
+          It looks similar but a few keywords differ. Quick swap-list:
+          <div class="not-js-table">
+            <div><span class="njs-js">const / let x = …</span><span class="njs-arrow">→</span><span class="njs-ayu">let x = …</span></div>
+            <div><span class="njs-js">for (const x of list) { }</span><span class="njs-arrow">→</span><span class="njs-ayu">for x in list { }</span></div>
+            <div><span class="njs-js">console.log(x)</span><span class="njs-arrow">→</span><span class="njs-ayu">print x;</span></div>
+            <div><span class="njs-js">function f(a) { }</span><span class="njs-arrow">→</span><span class="njs-ayu">fn f(a) { }</span></div>
+          </div>
+          See the <a href="#features">Features</a> section above for the full syntax.
+        </div>
       </div>
 
       <div class="pg-grid">
