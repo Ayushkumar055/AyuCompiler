@@ -619,6 +619,7 @@ function jsRun(source, { onLog } = {}) {
    Page content + wiring
    ========================================================= */
 const EXAMPLES = {
+  "basics.js": `// Basic variables and math\nlet a = 10;\nconst b = 25;\nlet sum = a + b;\nconsole.log("Sum:", sum);\nconsole.log("Double a:", a * 2);\nconsole.log("typeof sum:", typeof sum);`,
   "closures.js": `function makeCounter() {\n  let count = 0;\n  return function() {\n    count++;\n    return count;\n  };\n}\n\nconst counter = makeCounter();\nconsole.log(counter());\nconsole.log(counter());\nconsole.log(counter());`,
   "recursion.js": `function factorial(n) {\n  if (n <= 1) return 1;\n  return n * factorial(n - 1);\n}\n\nconsole.log(factorial(5));`,
   "arrays.js": `const nums = [1, 2, 3, 4, 5];\nconsole.log(nums.filter(n => n % 2 === 0));\nconsole.log(nums.map(n => n * n));\nconsole.log(nums.reduce((a, b) => a + b, 0));`,
@@ -721,7 +722,7 @@ let lastResult = { output: [], ast: null, isError: false };
 let activeTab = "output";
 
 function loadExample(name) { codeInput.value = EXAMPLES[name]; }
-loadExample("closures.js");
+loadExample("basics.js");
 exampleSelect.addEventListener("change", () => loadExample(exampleSelect.value));
 
 function renderOutput() {
